@@ -26,7 +26,7 @@
   section { border-bottom:1px solid var(--line); padding:16px 0 18px; }
   h2 { margin:0 0 8px; font:700 20px var(--font); display:flex; align-items:center; gap:10px; }
   h2 .n { font:700 13px var(--font); background:var(--surface2); color:var(--muted); width:26px; height:26px; border-radius:var(--r); display:inline-grid; place-items:center; flex:none; }
-  h2 .ok { margin-left:auto; font:600 13px var(--font); color:var(--ok); background:rgba(76,175,125,.14); border:1px solid rgba(76,175,125,.38); padding:2px 8px; border-radius:var(--r); }
+  h2 .ok { margin-left:auto; font:500 14px var(--font); color:var(--ok); }
   .not { margin:0 0 10px; color:var(--muted); font-size:14px; }
   .not b { color:var(--text); }
   label { display:block; font:600 13px var(--font); color:var(--muted); margin:10px 0 4px; }
@@ -89,7 +89,7 @@
   <div class="cols">
   <div>
     <section id="s1">
-      <h2><span class="n">1</span> Cüzdan <span class="ok" id="ok1" hidden>hazır</span></h2>
+      <h2><span class="n">1</span> Cüzdan <span class="ok" id="ok1" hidden>Bağlı</span></h2>
       <p class="not">Faucet'ten MON aldığın cüzdanın private key'ini yapıştır (MetaMask → Hesap detayları → Private key'i göster).
         Anahtar sadece bu tarayıcıda saklanır, hiçbir sunucuya gönderilmez. <b>Sadece test ağı cüzdanı kullan.</b></p>
       <label for="key">Private key</label>
@@ -101,7 +101,7 @@
     </section>
 
     <section id="s2">
-      <h2><span class="n">2</span> Kontrat <span class="ok" id="ok2" hidden>hazır</span></h2>
+      <h2><span class="n">2</span> Kontrat <span class="ok" id="ok2" hidden>Bağlı</span></h2>
       <p class="not">Yeni bir kontrat deploy et ya da daha önce deploy ettiğin kontratın adresini gir.</p>
       <div class="grid5">
         <div><label for="pCommit">Mühür süresi (sn)</label><input id="pCommit" value="60"></div>
@@ -117,7 +117,7 @@
     </section>
 
     <section id="s3">
-      <h2><span class="n">3</span> Bot değerlendiriciler <span class="ok" id="ok3" hidden>çalışıyor</span></h2>
+      <h2><span class="n">3</span> Bot değerlendiriciler <span class="ok" id="ok3" hidden>Çalışıyor</span></h2>
       <p class="not">Bir iş teslim edilince havuzdan 3 değerlendirici seçilir, havuzda en az 3 kişi olmalı. Botlar bu sekmede çalışır:
         teminat yatırır, puanlar, mühürler, oyunu açar ve süresi dolan işleri ilerletir. <b>Bu sekmeyi demo boyunca açık tut.</b>
         Kendi telefonunla denerken bir botu <i>kapalı</i> yap; havuzda 2 bot + sen kalınca görev kesin sana düşer.</p>
