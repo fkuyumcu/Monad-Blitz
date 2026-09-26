@@ -57,6 +57,7 @@
   @keyframes bas { from { transform:rotate(-4deg) scale(1.8); opacity:0; } to { transform:rotate(-4deg) scale(1); opacity:1; } }
   .sonuc { margin-top:auto; font:600 15px var(--mono); padding:6px 10px; border:2px solid var(--ink); }
   .sonuc.isabet { color:var(--kabul); border-color:var(--kabul); background:#fff; }
+  .sonuc small { display:block; font:400 13px var(--mono); color:var(--soft); margin-top:2px; }
   .sonuc.ceza { background:var(--cezabg); }
   .uye.cezali .adres { text-decoration:line-through; text-decoration-thickness:3px; text-decoration-color:var(--ret); }
   .dots::after { content:""; animation:dots 1.2s steps(4) infinite; }
@@ -258,6 +259,9 @@ async function render() {
 
   if (j.status === 0 || j.status === 4) { $("panel").innerHTML = ""; $("result").className = "hukum"; return; }
   const fin = finals[id];
+  // kontratta havuz = ücret + kesilen cezalar; isabetli değerlendiricilere ağırlıklarına göre bölünür
+  const slashTotal = Object.values(slashes[id] || {}).reduce((s, x) => s + x, 0n);
+  const sumW = Object.values(paid[id] || {}).reduce((s, p) => s + p.weight, 0);
   $("panel").innerHTML = j.reviewers.map((a, i) => {
     const k = a.toLowerCase(), info = infoMap[k];
     const acc = info && Number(info.reviews) ? "%" + Math.round(Number(info.weightSum) / (3 * Number(info.reviews)) * 100) + " isabet · " + info.reviews + " iş" : "yeni değerlendirici";
@@ -278,7 +282,11 @@ async function render() {
     const p = (paid[id] || {})[k], s = (slashes[id] || {})[k];
     if (j.status === 3) {
       if (s) { cls += " cezali"; foot = `<div class="sonuc ceza">${score ? `Medyandan ${Math.abs(score - Number(j.finalScore))} puan sapma` : "Süresinde oy yok"} · −${fmt(s)} MON</div>`; }
-      else if (p) foot = `<div class="sonuc isabet">İsabet ${"●".repeat(p.weight)}${"○".repeat(3 - p.weight)} · +${fmt(p.reward)} MON</div>`;
+      else if (p) {
+        const feeShare = sumW ? (j.fee * BigInt(p.weight)) / BigInt(sumW) : 0n;
+        const split = slashTotal > 0n ? `<small>ücret ${fmt(feeShare)} + ceza payı ${fmt(p.reward - feeShare)}</small>` : "";
+        foot = `<div class="sonuc isabet">İsabet ${"●".repeat(p.weight)}${"○".repeat(3 - p.weight)} · +${fmt(p.reward)} MON${split}</div>`;
+      }
     }
     return `<article class="uye ${cls}"><div class="rn">Değerlendirici ${ROMAN[i]}</div>
       <div class="adres">${short(a)}</div><div class="itibar">${acc}</div>${mid}${foot}</article>`;
@@ -290,7 +298,9 @@ async function render() {
     const pay = fin ? fin.pay : (f >= 8 ? j.amount : (j.amount * BigInt(f)) / 10n);
     box.className = "hukum goster";
     box.innerHTML = `<div class="skor">${f || "—"}<small>/10</small></div>
-      <div class="metin">${f ? `Nihai puan üç puanın <b>medyanı</b>. Freelancer <b>${fmt(pay)} MON</b> aldı${f >= 8 ? " (tam ödeme)" : ` (puan oranında, %${f * 10})`}. Değerlendirme ücreti isabet oranına göre paylaştırıldı.`
+      <div class="metin">${f ? `Nihai puan üç puanın <b>medyanı</b>. Freelancer <b>${fmt(pay)} MON</b> aldı${f >= 8 ? " (tam ödeme)" : ` (puan oranında, %${f * 10})`}. ${slashTotal > 0n && sumW
+          ? `Değerlendirme ücreti ve kesilen <b>${fmt(slashTotal)} MON</b> ceza, isabetli değerlendiricilere isabet oranlarına göre bölüştürüldü.`
+          : "Değerlendirme ücreti isabet oranına göre paylaştırıldı."}`
                                 : "Yeterli oy çıkmadı, tüm ödeme iş verene iade edildi."}
         <span class="kalici">Bu karar zincirde · hiçbir yönetici değiştiremez ya da silemez</span></div>
       ${fin ? `<a target="_blank" href="${CFG.explorer}/tx/${fin.tx}">İşlem ↗</a>` : "<span></span>"}`;
