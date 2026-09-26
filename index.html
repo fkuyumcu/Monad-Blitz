@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E100F">
+<title>Consilio</title>
+<meta name="description" content="Freelance teslimatlarını üç bağımsız değerlendirici puanlar. Ödemeyi medyan puan belirler. Monad testnet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0E100F; --surface:#171A19; --line:#2A2E2C; --text:#F2F2EE; --muted:#A7ABA6;
+          --purple:#836EF9; --purple-text:#B9ADFF; --deep:#200052; --berry:#A0055D;
+          --font:"Hanken Grotesk",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace; --r:6px;
+          --pad:clamp(20px,5vw,72px); }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--text); }
+  body { font:18px/1.5 var(--font); -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-underline-offset:4px; }
+  .wrap { max-width:1440px; margin:0 auto; padding:0 var(--pad); }
+
+  .top { display:flex; justify-content:space-between; align-items:center; gap:16px; padding-top:24px; padding-bottom:24px; }
+  .top .ad { font:700 20px var(--font); letter-spacing:-.01em; }
+  .top nav { display:flex; gap:28px; font:500 17px var(--font); flex-wrap:wrap; }
+  .top nav a { text-decoration:none; color:var(--muted); }
+  .top nav a:hover { color:var(--text); }
+
+  .hero { padding-top:clamp(40px,10vh,120px); padding-bottom:clamp(48px,10vh,120px); }
+  .hero h1 { margin:0; font:800 clamp(72px,17vw,248px)/.86 var(--font); letter-spacing:-.055em; }
+  .hero p { margin:clamp(24px,4vh,44px) 0 0; max-width:17em; font:500 clamp(26px,3.6vw,52px)/1.12 var(--font); letter-spacing:-.02em; }
+  .hero p span { color:var(--muted); }
+  .cta { display:flex; gap:12px; flex-wrap:wrap; margin-top:clamp(28px,5vh,52px); }
+  .btn { display:inline-block; font:700 19px var(--font); text-decoration:none; padding:16px 22px; border-radius:var(--r); background:var(--purple); color:var(--bg); }
+  .btn.ghost { background:transparent; color:var(--text); border:1px solid var(--line); }
+  .btn:hover { opacity:.9; }
+
+  section { border-top:1px solid var(--line); padding-top:clamp(40px,7vh,80px); padding-bottom:clamp(40px,7vh,80px); }
+  .baslik { font:600 18px var(--font); color:var(--muted); margin:0 0 clamp(20px,4vh,36px); }
+
+  .akis { margin:0; padding:0; list-style:none; }
+  .akis li { display:grid; grid-template-columns:minmax(150px,1fr) 3fr; gap:24px; padding:clamp(18px,3vh,28px) 0; border-top:1px solid var(--line); }
+  .akis li:first-child { border-top:0; padding-top:0; }
+  .akis b { font:600 clamp(18px,1.6vw,22px)/1.3 var(--font); color:var(--purple-text); padding-top:.35em; }
+  .akis span { font:500 clamp(26px,3.2vw,46px)/1.15 var(--font); letter-spacing:-.02em; }
+
+  .ornek { background:var(--purple); color:var(--bg); border-radius:var(--r); padding:clamp(28px,5vw,64px); margin-top:clamp(40px,7vh,80px); }
+  .ornek p.baslik { font:600 18px var(--font); margin:0 0 clamp(20px,4vh,36px); color:rgba(14,16,15,.7); letter-spacing:0; }
+  .puanlar { display:flex; gap:clamp(16px,3vw,48px); align-items:flex-end; flex-wrap:wrap; }
+  .puanlar div { font:800 clamp(88px,13vw,196px)/.85 var(--font); letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+  .puanlar div small { display:block; font:600 clamp(15px,1.3vw,18px) var(--font); letter-spacing:0; margin-top:14px; opacity:.72; }
+  .puanlar .med { padding-left:clamp(16px,3vw,48px); border-left:2px solid rgba(14,16,15,.35); }
+  .puanlar .dis { opacity:.45; }
+  .ornek p { margin:clamp(24px,4vh,44px) 0 0; max-width:24em; font:500 clamp(22px,2.6vw,36px)/1.25 var(--font); letter-spacing:-.01em; }
+
+  .kurallar { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,48px); }
+  .kurallar div { border-top:2px solid var(--text); padding-top:18px; }
+  .kurallar strong { display:block; font:700 clamp(40px,5vw,72px)/1 var(--font); letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+  .kurallar p { margin:14px 0 0; font:400 clamp(18px,1.5vw,21px)/1.45 var(--font); color:var(--muted); }
+  .kurallar p b { color:var(--text); font-weight:600; }
+
+  .canli .sayilar { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,48px); }
+  .canli strong { display:block; font:800 clamp(64px,9vw,140px)/.9 var(--font); letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+  .canli strong small { font:600 clamp(20px,2vw,30px) var(--font); letter-spacing:0; color:var(--muted); margin-left:6px; }
+  .canli span { display:block; margin-top:12px; font:500 19px var(--font); color:var(--muted); }
+  .canli .not { margin-top:clamp(24px,4vh,40px); font:400 17px var(--font); color:var(--muted); }
+  .canli .not a { font:400 15px var(--mono); word-break:break-all; }
+
+  footer { border-top:1px solid var(--line); padding-top:28px; padding-bottom:40px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color:var(--muted); font:400 16px var(--font); }
+
+  @media (max-width:760px) {
+    .akis li { grid-template-columns:1fr; gap:6px; }
+    .kurallar, .canli .sayilar { grid-template-columns:1fr; }
+    .top nav { gap:18px; font-size:16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="ad">Consilio</span>
+    <nav>
+      <a id="navDash" href="dashboard/">Canlı ekran</a>
+      <a id="navContract" href="#" target="_blank">Kontrat</a>
+      <a href="https://github.com/fkuyumcu/Monad-Blitz" target="_blank">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <h1>Consilio</h1>
+      <p>Freelance teslimatlarını üç bağımsız değerlendirici puanlar. <span>Ödemeyi medyan puan belirler.</span></p>
+      <div class="cta">
+        <a class="btn" id="ctaDash" href="dashboard/">Canlı ekranı aç</a>
+        <a class="btn ghost" id="ctaContract" href="#" target="_blank">Kontratı incele</a>
+      </div>
+    </div>
+
+    <section>
+      <p class="baslik">Bir iş nasıl sonuçlanır</p>
+      <ol class="akis">
+        <li><b>İş veren</b><span>Ödemeyi kontrata kilitler. Tutarın %10'u değerlendirme ücreti olarak ayrılır.</span></li>
+        <li><b>Freelancer</b><span>İşi teslim eder. Kontrat, teminat yatırmış havuzdan rastgele üç değerlendirici seçer.</span></li>
+        <li><b>Değerlendiriciler</b><span>Birbirinin puanını görmeden 1–10 arası puan verir. Oylar önce mühürlenir, sonra birlikte açılır.</span></li>
+        <li><b>Kontrat</b><span>Medyanı hesaplar. Ödemeyi, ücreti ve cezaları dağıtır.</span></li>
+      </ol>
+
+      <div class="ornek">
+        <p class="baslik">Örnek</p>
+        <div class="puanlar">
+          <div>6<small>Değerlendirici I</small></div>
+          <div>6<small>Değerlendirici II</small></div>
+          <div class="dis">10<small>Değerlendirici III</small></div>
+          <div class="med">6<small>Medyan</small></div>
+        </div>
+        <p>Freelancer ödemenin %60'ını alır. 10 veren değerlendirici medyandan 4 puan saptığı için teminatından kaybeder. O tutar diğer ikisine bölünür.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="baslik">Kurallar</p>
+      <div class="kurallar">
+        <div><strong>8+</strong><p><b>Tam ödeme.</b> Medyan 8'in altındaysa freelancer puan oranında alır, kalanı iş verene döner.</p></div>
+        <div><strong>±3</strong><p><b>Ceza sınırı.</b> Medyandan 3 puan ya da daha fazla sapan, oy vermeyen veya oyunu açmayan teminatından kaybeder.</p></div>
+        <div><strong>3–2–1</strong><p><b>Ücret payı.</b> Medyana tam isabet 3, bir puan fark 2, iki puan fark 1 pay alır. Ücret ve cezalar bu paylara göre bölünür.</p></div>
+      </div>
+    </section>
+
+    <section class="canli">
+      <p class="baslik">Monad testnet, şu an</p>
+      <div class="sayilar">
+        <div><strong id="sPool">—</strong><span>Havuzdaki değerlendirici</span></div>
+        <div><strong id="sJobs">—</strong><span>Açılan iş</span></div>
+        <div><strong id="sLocked">—</strong><span>Kontratta kilitli</span></div>
+      </div>
+      <p class="not">Kontrat: <a id="addrLink" href="#" target="_blank"></a></p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Consilio · Monad Blitz İstanbul, 2026</span>
+    <a href="https://github.com/fkuyumcu/Monad-Blitz" target="_blank">Kaynak kod</a>
+  </footer>
+</div>
+
+<script src="vendor/ethers.umd.min.js"></script>
+<script>
+const LIVE = "0x3495fc469BEb44b859C4cE09Ba9AaD65B25AB52D"; // KONTRAT.md'deki canlı deploy
+const hp = new URLSearchParams(location.hash.slice(1));
+const CFG = { contract: hp.get("c") || LIVE, rpc: hp.get("r") || "https://testnet-rpc.monad.xyz", explorer: "https://testnet.monadvision.com" };
+const $ = (id) => document.getElementById(id);
+const rpcParam = hp.get("r") ? `&r=${encodeURIComponent(CFG.rpc)}` : "";
+const dash = `dashboard/#c=${CFG.contract}${rpcParam}`;
+const explorer = `${CFG.explorer}/address/${CFG.contract}`;
+$("navDash").href = $("ctaDash").href = dash;
+$("navContract").href = $("ctaContract").href = $("addrLink").href = explorer;
+$("addrLink").textContent = CFG.contract;
+
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 3 });
+async function load() {
+  try {
+    const provider = new ethers.JsonRpcProvider(CFG.rpc);
+    const c = new ethers.Contract(CFG.contract, ["function poolSize() view returns (uint256)", "function jobCount() view returns (uint256)"], provider);
+    const [pool, jobs, bal] = await Promise.all([c.poolSize(), c.jobCount(), provider.getBalance(CFG.contract)]);
+    $("sPool").textContent = pool.toString();
+    $("sJobs").textContent = jobs.toString();
+    $("sLocked").innerHTML = `${fmt(bal)}<small>MON</small>`;
+  } catch (e) { console.warn(e); }
+}
+load();
+setInterval(load, 15000);
+</script>
+</body>
+</html>

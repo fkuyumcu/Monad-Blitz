@@ -1,4 +1,4 @@
-# Kurul — Kontrat detayları
+# Consilio — Kontrat detayları
 
 Tek kontrat: [`contracts/PeerReview.sol`](contracts/PeerReview.sol). Sahibi (owner/admin) yok, durdurulamaz, güncellenemez.
 Para, değerlendirici seçimi, oy sayımı, medyan, ödeme ve ceza kontratın içinde hesaplanır.

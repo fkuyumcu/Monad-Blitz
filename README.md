@@ -1,4 +1,4 @@
-# Kurul — merkeziyetsiz freelance değerlendirme (Monad Blitz)
+# Consilio — merkeziyetsiz freelance değerlendirme (Monad Blitz)
 
 Freelancer'ın işini tek bir amir değil, **havuzdan rastgele seçilen, birbirinden habersiz 3 değerlendirici** puanlar.
 Puanlar ve yorumlar zincire yazılır. **Hiçbir yönetici bunları değiştiremez ya da silemez**, çünkü kontratın sahibi yok ve kontrat güncellenemez.

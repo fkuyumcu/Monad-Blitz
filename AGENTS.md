@@ -3,7 +3,7 @@
 Bu dosyayı ilk sen oku. Sonra sırasıyla `docs/handoff/` altındaki dosyalara geç.
 
 ## Proje tek cümlede
-**Kurul — merkeziyetsiz freelance değerlendirme:** İş veren ödemeyi kontrata kilitler, freelancer teslim eder.
+**Consilio (eski adı Kurul) — merkeziyetsiz freelance değerlendirme:** İş veren ödemeyi kontrata kilitler, freelancer teslim eder.
 Teminat yatırmış havuzdan rastgele 3 değerlendirici, birbirini görmeden (commit-reveal) 1–10 puan ve yorum verir.
 Nihai puan medyandır. Freelancer puana göre ödeme alır. Değerlendiriciler medyana yakınlıklarına göre ücret paylaşır,
 3 puan ya da daha fazla sapan ceza yer. Kayıtlar zincirde; kontratın sahibi yok ve kontrat güncellenemez.
@@ -24,6 +24,7 @@ Proje gün içinde "AI hakemli emanet"ten (AIEscrow) bu tasarıma **pivot** etti
 
 ## Dosya haritası
 ```
+index.html                 landing page (GitHub Pages ana sayfası, canlı kontrat sayıları)
 KONTRAT.md                 kontratın sade anlatımı + canlı testnet deploy bilgileri (jüri/takım için)
 contracts/PeerReview.sol   tek kontrat (Solidity 0.8.28, viaIR, cancun)
 build/PeerReview.json      derlenmiş abi + bytecode (commit'li; kontrat değişirse yeniden üret)
