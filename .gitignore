@@ -1,0 +1,10 @@
+# gizli anahtarlar — asla commit etme
+.env
+*.env
+!.env.example
+# bağımlılıklar / derleme çıktıları
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

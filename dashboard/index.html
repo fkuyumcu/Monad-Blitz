@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emanet Kararları</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3eee3; --paper2: #ebe4d5; --ink: #16130f; --soft: #5c554a;
+    --kabul: #1d6a3a; --ret: #c0271d; --ceza: #e8a317; --cezabg: #fbe7b0;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body { margin: 0; color: var(--ink); font: 17px/1.5 var(--sans); background: var(--paper); }
+  main { max-width: 1320px; margin: 0 auto; padding: 22px 32px 40px; }
+  a { color: inherit; text-underline-offset: 3px; }
+
+  /* başlık: gazete / sicil künyesi */
+  .mast { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+          border-bottom: 4px double var(--ink); padding-bottom: 12px; }
+  .mast h1 { margin: 0; font: 800 54px/0.95 var(--serif); letter-spacing: -0.02em; }
+  .mast .kunye { font: 400 13px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .08em; margin-top: 10px; }
+  .kasa { text-align: right; border-left: 1px solid var(--ink); padding-left: 24px; }
+  .kasa small { display: block; font: 400 12px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+  .kasa b { font: 600 46px/1 var(--serif); font-variant-numeric: tabular-nums; }
+  .kasa span { font: 400 16px var(--mono); }
+
+  /* dosya satırı */
+  .dosya { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid var(--ink); }
+  .dosya .no { font: 600 30px var(--serif); }
+  .dosya .durum { font: 600 14px var(--mono); text-transform: uppercase; letter-spacing: .08em; padding: 2px 8px; border: 1.5px solid var(--ink); }
+  .dosya .durum.ok { color: var(--kabul); border-color: var(--kabul); }
+  .dosya .durum.no { color: var(--ret); border-color: var(--ret); }
+  .dosya .tutar { font: 400 16px var(--mono); }
+  .nav { margin-left: auto; display: flex; gap: 0; }
+  .nav button { font: 600 14px var(--mono); background: transparent; color: var(--ink); border: 1.5px solid var(--ink);
+                padding: 4px 12px; cursor: pointer; margin-left: -1.5px; }
+  .nav button:hover, .nav button.on { background: var(--ink); color: var(--paper); }
+
+  /* şartname / teslimat: iki sütunlu belge */
+  .belge { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--ink); }
+  .belge > div { padding: 16px 24px 18px 0; }
+  .belge > div + div { padding-left: 24px; border-left: 1px solid var(--ink); }
+  .etiket { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .12em; margin: 0 0 8px; }
+  .belge pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 400 19px/1.5 var(--mono); }
+
+  /* hakemler */
+  .hakemler { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--ink); }
+  .hakem { position: relative; padding: 18px 22px 16px 0; min-height: 250px; display: flex; flex-direction: column; gap: 8px; }
+  .hakem + .hakem { padding-left: 22px; border-left: 1px solid var(--ink); }
+  .hakem .rn { font: 400 13px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+  .hakem .ad { font: 600 26px/1.1 var(--serif); }
+  .hakem .adres { font: 400 13px var(--mono); color: var(--soft); }
+  .hakem .gerekce { font: 400 italic 20px/1.35 var(--serif); margin-top: 6px; min-height: 54px; }
+  .hakem .alt { margin-top: auto; font: 400 13px var(--mono); color: var(--soft); }
+  .hakem .alt a { color: var(--ink); }
+
+  /* karar mührü */
+  .muhur { align-self: flex-start; margin-top: 6px; font: 800 38px/1 var(--serif); letter-spacing: .06em;
+           padding: 6px 14px 4px; border: 4px solid currentColor; transform: rotate(-4deg); transform-origin: left center; }
+  .hakem.ok .muhur { color: var(--kabul); }
+  .hakem.no .muhur { color: var(--ret); }
+  .hakem.bekle .muhur { color: var(--soft); border-style: dashed; transform: none; font-size: 26px; }
+  .hakem.dusun .muhur { color: var(--ink); border-style: dashed; transform: none; font-size: 26px; }
+  .hakem .muhur { animation: none; }
+  .hakem.yeni .muhur { animation: bas .35s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes bas { from { transform: rotate(-4deg) scale(1.8); opacity: 0; } to { transform: rotate(-4deg) scale(1); opacity: 1; } }
+  .dots::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+
+  /* ceza şeridi */
+  .ceza { display: none; font: 600 15px var(--mono); background: var(--cezabg); border: 2px solid var(--ink); padding: 6px 10px; }
+  .hakem.cezali .ceza { display: block; }
+  .hakem.cezali .ad { text-decoration: line-through; text-decoration-thickness: 3px; text-decoration-color: var(--ret); }
+
+  /* hüküm */
+  .hukum { display: none; padding: 18px 0; border-bottom: 4px double var(--ink); }
+  .hukum.goster { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; }
+  .hukum .kelime { font: 800 44px/1 var(--serif); letter-spacing: .02em; }
+  .hukum.ok .kelime { color: var(--kabul); }
+  .hukum.no .kelime { color: var(--ret); }
+  .hukum .metin { font: 400 22px/1.35 var(--serif); }
+  .hukum a { font: 600 14px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* tutanak */
+  .tutanak { padding-top: 16px; }
+  .tutanak ol { list-style: none; margin: 0; padding: 0; max-height: 230px; overflow: auto; }
+  .tutanak li { display: grid; grid-template-columns: 90px 1fr auto; gap: 14px; padding: 5px 0;
+                border-top: 1px dotted var(--soft); font: 400 14px var(--mono); }
+  .tutanak li:first-child { border-top: 0; }
+  .tutanak li.vurgu { background: var(--cezabg); }
+  .tutanak time { color: var(--soft); }
+  .err { font: 600 14px var(--mono); color: var(--ret); margin-top: 10px; }
+
+  @media (max-width: 900px) {
+    main { padding: 16px; }
+    .mast { grid-template-columns: 1fr; } .kasa { text-align: left; border-left: 0; padding-left: 0; }
+    .mast h1 { font-size: 38px; }
+    .belge, .hakemler { grid-template-columns: 1fr; }
+    .belge > div + div, .hakem + .hakem { padding-left: 0; border-left: 0; border-top: 1px solid var(--ink); }
+    .hukum.goster { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hakem.yeni .muhur, .dots::after { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="mast">
+    <div>
+      <h1>Emanet Kararları</h1>
+      <div class="kunye">Üç bağımsız hakem · iki oyla hüküm · ters oya teminat cezası · kontrat <a id="contractLink" target="_blank"></a></div>
+    </div>
+    <div class="kasa">
+      <small>Emanette + teminatta</small>
+      <b id="vault">–</b> <span>MON</span>
+    </div>
+  </header>
+
+  <div class="dosya">
+    <span class="no" id="jobTitle">Dosya bekleniyor</span>
+    <span class="durum" id="jobStatus">—</span>
+    <span class="tutar" id="jobAmount"></span>
+    <span class="nav"><button id="prev" aria-label="önceki dosya">←</button><button id="next" aria-label="sonraki dosya">→</button><button id="live">Canlı</button></span>
+  </div>
+
+  <section class="belge">
+    <div><p class="etiket">Şartname</p><pre id="spec">—</pre></div>
+    <div><p class="etiket">Teslimat</p><pre id="deliverable">—</pre></div>
+  </section>
+
+  <section class="hakemler" id="judges"></section>
+
+  <section class="hukum" id="result"></section>
+
+  <section class="tutanak">
+    <p class="etiket">Tutanak — zincirdeki kayıtlar</p>
+    <ol id="feed"></ol>
+  </section>
+  <div class="err" id="err"></div>
+</main>
+
+<script src="ethers.umd.min.js"></script>
+<script src="config.js"></script>
+<script>
+const CFG = window.ESCROW_CONFIG;
+const ABI = [
+  "function jobCount() view returns (uint256)",
+  "function getJob(uint256) view returns (tuple(address client,address worker,uint256 amount,uint8 status,uint8 approvals,uint8 rejections,string spec,string deliverable))",
+  "function getJudges() view returns (address[3])",
+  "function stakeOf(address) view returns (uint256)",
+  "event JobCreated(uint256 indexed jobId, address indexed client, address indexed worker, uint256 amount, string spec)",
+  "event Submitted(uint256 indexed jobId, address indexed worker, string deliverable)",
+  "event Voted(uint256 indexed jobId, address indexed judge, bool approve, string reason)",
+  "event Resolved(uint256 indexed jobId, bool approved, address indexed to, uint256 amount)",
+  "event Slashed(uint256 indexed jobId, address indexed judge, address indexed to, uint256 amount)",
+];
+const STATUS = ["Açık", "Değerlendiriliyor", "Ödendi", "İade edildi", "İptal"];
+const ROMAN = ["I", "II", "III"];
+const provider = new ethers.JsonRpcProvider(CFG.rpc);
+const c = new ethers.Contract(CFG.contract, ABI, provider);
+const $ = (id) => document.getElementById(id);
+const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 4 });
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+$("contractLink").href = `${CFG.explorer}/address/${CFG.contract}`;
+$("contractLink").textContent = short(CFG.contract);
+
+const votes = {};    // jobId -> { judge -> {approve, reason, tx} }
+const slashes = {};  // jobId -> { judge -> amount }
+const resolved = {}; // jobId -> {approved, to, amount, tx}
+const stamped = new Set(); // mühür animasyonu bir kez oynasın
+const feed = [];
+let judges = [], lastBlock = null, viewJob = null, follow = true, jobCount = 0;
+
+function addFeed(text, tx, vurgu = false) {
+  const t = new Date().toLocaleTimeString("tr-TR");
+  feed.unshift({ t, text, tx, vurgu });
+  if (feed.length > 60) feed.pop();
+  $("feed").innerHTML = feed.map(f =>
+    `<li class="${f.vurgu ? "vurgu" : ""}"><time>${f.t}</time><span>${f.text}</span>${f.tx ? `<a target="_blank" href="${CFG.explorer}/tx/${f.tx}">tx ↗</a>` : "<span></span>"}</li>`).join("");
+}
+
+function modelOf(reason) {
+  const m = reason && reason.match(/^\[([^\]]+)\]\s*/);
+  return m ? m[1] : null;
+}
+
+async function pollEvents() {
+  const latest = await provider.getBlockNumber();
+  if (lastBlock === null) lastBlock = Math.max(0, latest - 90);
+  while (lastBlock < latest) {
+    const to = Math.min(latest, lastBlock + 90); // RPC'ler geniş aralığı reddedebilir
+    const logs = await provider.getLogs({ address: CFG.contract, fromBlock: lastBlock + 1, toBlock: to });
+    for (const log of logs) {
+      const ev = c.interface.parseLog(log);
+      if (!ev) continue;
+      const id = Number(ev.args.jobId);
+      const tx = log.transactionHash;
+      if (ev.name === "JobCreated") addFeed(`Dosya ${id} açıldı — ${fmt(ev.args.amount)} MON emanete alındı`, tx);
+      if (ev.name === "Submitted") addFeed(`Dosya ${id} için teslimat yapıldı`, tx);
+      if (ev.name === "Voted") {
+        (votes[id] ||= {})[ev.args.judge.toLowerCase()] = { approve: ev.args.approve, reason: ev.args.reason, tx };
+        addFeed(`Dosya ${id} — ${short(ev.args.judge)} oyu: ${ev.args.approve ? "KABUL" : "RET"}`, tx);
+      }
+      if (ev.name === "Slashed") {
+        (slashes[id] ||= {})[ev.args.judge.toLowerCase()] = ev.args.amount;
+        addFeed(`Dosya ${id} — ${short(ev.args.judge)} çoğunluğa ters oy verdi, ${fmt(ev.args.amount)} MON teminatı kesildi`, tx, true);
+      }
+      if (ev.name === "Resolved") {
+        resolved[id] = { approved: ev.args.approved, to: ev.args.to, amount: ev.args.amount, tx };
+        addFeed(`Dosya ${id} karara bağlandı — ${ev.args.approved ? "ödeme iş yapana" : "iade iş verene"}`, tx);
+      }
+    }
+    lastBlock = to;
+  }
+}
+
+async function render() {
+  jobCount = Number(await c.jobCount());
+  $("vault").textContent = fmt(await provider.getBalance(CFG.contract));
+  $("live").classList.toggle("on", follow);
+  if (!jobCount) return;
+  if (follow || viewJob === null) viewJob = jobCount - 1;
+  const id = viewJob;
+  const j = await c.getJob(id);
+  const status = Number(j.status);
+  $("jobTitle").textContent = `Dosya No. ${id}`;
+  $("jobStatus").textContent = STATUS[status];
+  $("jobStatus").className = "durum " + (status === 2 ? "ok" : status === 3 ? "no" : "");
+  $("jobAmount").textContent = `${fmt(j.amount)} MON emanette`;
+  $("spec").textContent = j.spec;
+  $("deliverable").textContent = j.deliverable || "Teslimat bekleniyor…";
+
+  const stakes = await Promise.all(judges.map(a => c.stakeOf(a)));
+  $("judges").innerHTML = judges.map((a, i) => {
+    const key = a.toLowerCase();
+    const v = (votes[id] || {})[key];
+    const s = (slashes[id] || {})[key];
+    let cls = "bekle", muhur = "Bekliyor", gerekce = "";
+    if (v) {
+      cls = v.approve ? "ok" : "no";
+      muhur = v.approve ? "KABUL" : "RET";
+      gerekce = "“" + esc(v.reason.replace(/^\[[^\]]+\]\s*/, "")) + "”";
+      const k = `${id}-${key}`;
+      if (!stamped.has(k)) { stamped.add(k); cls += " yeni"; }
+    } else if (status >= 1 && status <= 3) {
+      cls = "dusun"; muhur = `<span class="dots">İnceliyor</span>`;
+    }
+    if (s) cls += " cezali";
+    const model = v && modelOf(v.reason);
+    return `<article class="hakem ${cls}">
+      <div class="rn">Hakem ${ROMAN[i]}</div>
+      <div class="ad">${model ? esc(model) : "—"}</div>
+      <div class="adres">${short(a)}</div>
+      <div class="muhur">${muhur}</div>
+      <div class="gerekce">${gerekce}</div>
+      <div class="ceza">Çoğunluğa ters oy · teminattan −${s ? fmt(s) : 0} MON</div>
+      <div class="alt">Teminat ${fmt(stakes[i])} MON${v ? ` · <a target="_blank" href="${CFG.explorer}/tx/${v.tx}">oy kaydı ↗</a>` : ""}</div>
+    </article>`;
+  }).join("");
+
+  const r = resolved[id];
+  const box = $("result");
+  if (r) {
+    box.className = "hukum goster " + (r.approved ? "ok" : "no");
+    box.innerHTML = `<div class="kelime">${r.approved ? "Ödendi" : "İade"}</div>
+      <div class="metin">${fmt(r.amount)} MON ${r.approved ? "iş yapana" : "iş verene"} (${short(r.to)}) gönderildi. Kararı iki hakemin oyu verdi; parayı hiçbir aracı tutmadı.</div>
+      <a target="_blank" href="${CFG.explorer}/tx/${r.tx}">İşlem ↗</a>`;
+  } else box.className = "hukum";
+}
+
+$("prev").onclick = () => { follow = false; viewJob = Math.max(0, (viewJob ?? 0) - 1); render(); };
+$("next").onclick = () => { follow = false; viewJob = Math.min(jobCount - 1, (viewJob ?? 0) + 1); render(); };
+$("live").onclick = () => { follow = true; render(); };
+
+async function tick() {
+  try {
+    await pollEvents();
+    await render();
+    $("err").textContent = "";
+  } catch (e) {
+    $("err").textContent = "Bağlantı hatası: " + (e.shortMessage || e.message);
+  }
+  setTimeout(tick, 1000);
+}
+(async () => {
+  judges = [...await c.getJudges()];
+  tick();
+})();
+</script>
+</body>
+</html>
