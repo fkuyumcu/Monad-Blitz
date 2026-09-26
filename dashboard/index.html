@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Consilio · Canlı</title>
+<title>Consilio · Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -106,21 +106,21 @@
       <h1>Consilio</h1>
       <div class="kunye">Monad testnet · <a id="contractLink" target="_blank"></a></div>
     </div>
-    <div class="sayi"><small>Havuzdaki değerlendirici</small><b id="poolN">–</b></div>
-    <div class="sayi"><small>Kontratta kilitli</small><b id="vault">–</b> <span>MON</span></div>
+    <div class="sayi"><small>Reviewers in pool</small><b id="poolN">-</b></div>
+    <div class="sayi"><small>Locked in contract</small><b id="vault">-</b> <span>MON</span></div>
   </header>
 
   <div class="dosya">
-    <span class="no" id="jobTitle">Dosya bekleniyor</span>
-    <span class="durum" id="jobStatus">—</span>
+    <span class="no" id="jobTitle">Waiting for a job</span>
+    <span class="durum" id="jobStatus">-</span>
     <span class="sure" id="jobClock"></span>
     <span class="tutar" id="jobAmount"></span>
-    <span class="nav"><button id="prev" aria-label="önceki dosya">←</button><button id="next" aria-label="sonraki dosya">→</button><button id="live">Canlı</button></span>
+    <span class="nav"><button id="prev" aria-label="previous job">←</button><button id="next" aria-label="next job">→</button><button id="live">Live</button></span>
   </div>
 
   <section class="belge">
-    <div><p class="etiket">Şartname</p><pre id="spec">—</pre></div>
-    <div><p class="etiket">Teslimat · <span id="worker"></span></p><pre id="deliverable">—</pre></div>
+    <div><p class="etiket">Brief</p><pre id="spec">-</pre></div>
+    <div><p class="etiket">Delivery · <span id="worker"></span></p><pre id="deliverable">-</pre></div>
   </section>
 
   <section class="kurul" id="panel"></section>
@@ -128,11 +128,11 @@
 
   <div class="alt">
     <section>
-      <p class="etiket">İtibar</p>
-      <table class="itibar"><thead><tr><th>Değerlendirici</th><th>İsabet</th><th>İş</th><th>Kazanç</th><th>Ceza</th></tr></thead><tbody id="board"></tbody></table>
+      <p class="etiket">Reputation</p>
+      <table class="itibar"><thead><tr><th>Reviewer</th><th>Accuracy</th><th>Jobs</th><th>Earned</th><th>Penalty</th></tr></thead><tbody id="board"></tbody></table>
     </section>
     <section class="tutanak">
-      <p class="etiket">İşlem kaydı</p>
+      <p class="etiket">Activity</p>
       <ol id="feed"></ol>
     </section>
   </div>
@@ -148,8 +148,8 @@ const CFG = Object.assign({ rpc: "https://testnet-rpc.monad.xyz", explorer: "htt
 if (hp.get("c")) CFG.contract = hp.get("c");
 if (hp.get("r")) CFG.rpc = hp.get("r");
 if (!CFG.contract) {
-  document.getElementById("err").textContent = "Kontrat adresi yok. Büyük ekranı kontrol panelindeki linkten aç.";
-  throw new Error("kontrat adresi yok");
+  document.getElementById("err").textContent = "No contract address. Open this screen from the control panel link.";
+  throw new Error("no contract address");
 }
 const ABI = [
   "function jobCount() view returns (uint256)",
@@ -166,17 +166,17 @@ const ABI = [
   "event ReviewerPaid(uint256 indexed jobId, address indexed reviewer, uint8 weight, uint256 reward)",
   "event Finalized(uint256 indexed jobId, uint8 finalScore, uint256 workerPayout, uint256 clientRefund)",
 ];
-const STATUS = ["Açık · teslimat bekleniyor", "Mühürlü oylama", "Oylar açılıyor", "Sonuçlandı", "İptal"];
+const STATUS = ["Open · waiting for delivery", "Sealed voting", "Revealing votes", "Finalized", "Cancelled"];
 const ROMAN = ["I", "II", "III"];
 const ZERO32 = "0x" + "00".repeat(32);
 const provider = new ethers.JsonRpcProvider(CFG.rpc);
 const c = new ethers.Contract(CFG.contract, ABI, provider);
 const $ = (id) => document.getElementById(id);
 const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
-const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 5 });
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("en-US", { maximumFractionDigits: 5 });
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
 $("contractLink").href = `${CFG.explorer}/address/${CFG.contract}`;
-$("contractLink").textContent = "kontrat " + short(CFG.contract);
+$("contractLink").textContent = "contract " + short(CFG.contract);
 
 const paid = {};      // jobId -> { reviewer -> {weight, reward} }
 const slashes = {};   // jobId -> { reviewer -> amount }
@@ -187,7 +187,7 @@ const feed = [];
 let lastBlock = null, viewJob = null, follow = true, jobCount = 0, now = 0;
 
 function addFeed(text, tx, vurgu = false) {
-  feed.unshift({ t: new Date().toLocaleTimeString("tr-TR"), text, tx, vurgu });
+  feed.unshift({ t: new Date().toLocaleTimeString("en-GB"), text, tx, vurgu });
   if (feed.length > 80) feed.pop();
   $("feed").innerHTML = feed.map((f) =>
     `<li class="${f.vurgu ? "vurgu" : ""}"><time>${f.t}</time><span>${f.text}</span>${f.tx ? `<a target="_blank" href="${CFG.explorer}/tx/${f.tx}">tx ↗</a>` : "<span></span>"}</li>`).join("");
@@ -203,19 +203,19 @@ async function pollEvents() {
       const ev = c.interface.parseLog(log); if (!ev) continue;
       const a = ev.args, tx = log.transactionHash, id = a.jobId !== undefined ? Number(a.jobId) : null;
       switch (ev.name) {
-        case "ReviewerRegistered": addFeed(`${short(a.reviewer)} havuza katıldı · teminat ${fmt(a.stake)} MON`, tx); break;
-        case "JobCreated": addFeed(`Dosya ${id} açıldı · ${fmt(a.amount)} MON ödeme + ${fmt(a.fee)} MON ücret kilitlendi`, tx); break;
-        case "Submitted": addFeed(`Dosya ${id} teslim edildi · 3 değerlendirici rastgele atandı`, tx); break;
-        case "Committed": addFeed(`Dosya ${id} · ${short(a.reviewer)} oyunu mühürledi (puan gizli)`, tx); break;
-        case "RevealPhase": addFeed(`Dosya ${id} · mühürler açılıyor`, tx); break;
+        case "ReviewerRegistered": addFeed(`${short(a.reviewer)} joined the pool · stake ${fmt(a.stake)} MON`, tx); break;
+        case "JobCreated": addFeed(`Job ${id} opened · ${fmt(a.amount)} MON payment + ${fmt(a.fee)} MON fee locked`, tx); break;
+        case "Submitted": addFeed(`Job ${id} submitted · 3 reviewers picked at random`, tx); break;
+        case "Committed": addFeed(`Job ${id} · ${short(a.reviewer)} sealed a vote (score hidden)`, tx); break;
+        case "RevealPhase": addFeed(`Job ${id} · revealing votes`, tx); break;
         case "Revealed": (comments[id] ||= {})[a.reviewer.toLowerCase()] = a.comment;
-          addFeed(`Dosya ${id} · ${short(a.reviewer)} puanı: ${a.score}/10`, tx); break;
+          addFeed(`Job ${id} · ${short(a.reviewer)} scored ${a.score}/10`, tx); break;
         case "Slashed": (slashes[id] ||= {})[a.reviewer.toLowerCase()] = a.amount;
-          addFeed(`Dosya ${id} · ${short(a.reviewer)} teminatından ${fmt(a.amount)} MON kesildi`, tx, true); break;
+          addFeed(`Job ${id} · ${fmt(a.amount)} MON cut from ${short(a.reviewer)}`, tx, true); break;
         case "ReviewerPaid": (paid[id] ||= {})[a.reviewer.toLowerCase()] = { weight: Number(a.weight), reward: a.reward };
-          addFeed(`Dosya ${id} · ${short(a.reviewer)} +${fmt(a.reward)} MON (isabet ${"●".repeat(Number(a.weight))})`, tx); break;
+          addFeed(`Job ${id} · ${short(a.reviewer)} +${fmt(a.reward)} MON (accuracy ${"●".repeat(Number(a.weight))})`, tx); break;
         case "Finalized": finals[id] = { fin: Number(a.finalScore), pay: a.workerPayout, refund: a.clientRefund, tx };
-          addFeed(`Dosya ${id} sonuçlandı · medyan ${a.finalScore}/10 · freelancer ${fmt(a.workerPayout)} MON`, tx); break;
+          addFeed(`Job ${id} finalized · median ${a.finalScore}/10 · freelancer ${fmt(a.workerPayout)} MON`, tx); break;
       }
     }
     lastBlock = to;
@@ -226,7 +226,7 @@ function clock(j) {
   const dl = j.status === 1 ? Number(j.commitDeadline) : j.status === 2 ? Number(j.revealDeadline) : 0;
   if (!dl) return "";
   const s = dl - now;
-  return s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : "süre doldu";
+  return s > 0 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : "time is up";
 }
 
 async function renderBoard() {
@@ -238,7 +238,7 @@ async function renderBoard() {
     return { a, n, acc: n ? Number(r.weightSum) / (3 * n) : -1, earned: r.earned, slashed: r.slashed };
   }).sort((x, y) => (y.acc - x.acc) || (y.n - x.n)).slice(0, 10);
   $("board").innerHTML = rows.map((r) => `<tr class="${r.slashed > r.earned ? "eksi" : ""}">
-    <td>${short(r.a)}</td><td>${r.acc < 0 ? "—" : "%" + Math.round(r.acc * 100)}</td><td>${r.n}</td>
+    <td>${short(r.a)}</td><td>${r.acc < 0 ? "-" : Math.round(r.acc * 100) + "%"}</td><td>${r.n}</td>
     <td>${fmt(r.earned)}</td><td>${r.slashed > 0n ? "−" + fmt(r.slashed) : "0"}</td></tr>`).join("");
   return Object.fromEntries(pool.map((a, i) => [a.toLowerCase(), infos[i]]));
 }
@@ -254,13 +254,13 @@ async function render() {
   const id = viewJob;
   const raw = await c.getJob(id);
   const j = { ...raw.toObject(), status: Number(raw.status), reviewers: [...raw.reviewers], commits: [...raw.commits], scores: [...raw.scores].map(Number) };
-  $("jobTitle").textContent = `Dosya No. ${id}`;
+  $("jobTitle").textContent = `Job #${id}`;
   $("jobStatus").textContent = STATUS[j.status];
   $("jobClock").textContent = clock(j);
-  $("jobAmount").textContent = `${fmt(j.amount)} MON ödeme · ${fmt(j.fee)} MON ücret`;
+  $("jobAmount").textContent = `${fmt(j.amount)} MON payment · ${fmt(j.fee)} MON fee`;
   $("spec").textContent = j.spec;
-  $("deliverable").textContent = j.deliverable || "Teslimat bekleniyor…";
-  $("worker").textContent = j.worker === "0x0000000000000000000000000000000000000000" ? "açık iş" : "freelancer " + short(j.worker);
+  $("deliverable").textContent = j.deliverable || "Waiting for delivery…";
+  $("worker").textContent = j.worker === "0x0000000000000000000000000000000000000000" ? "open job" : "freelancer " + short(j.worker);
 
   if (j.status === 0 || j.status === 4) { $("panel").innerHTML = ""; $("result").className = "hukum"; return; }
   const fin = finals[id];
@@ -269,7 +269,7 @@ async function render() {
   const sumW = Object.values(paid[id] || {}).reduce((s, p) => s + p.weight, 0);
   $("panel").innerHTML = j.reviewers.map((a, i) => {
     const k = a.toLowerCase(), info = infoMap[k];
-    const acc = info && Number(info.reviews) ? "%" + Math.round(Number(info.weightSum) / (3 * Number(info.reviews)) * 100) + " isabet · " + info.reviews + " iş" : "yeni değerlendirici";
+    const acc = info && Number(info.reviews) ? Math.round(Number(info.weightSum) / (3 * Number(info.reviews)) * 100) + "% accuracy · " + info.reviews + (Number(info.reviews) === 1 ? " job" : " jobs") : "new reviewer";
     const sealed = j.commits[i] !== ZERO32, score = j.scores[i];
     let cls = "", mid = "";
     if (score) {
@@ -278,23 +278,23 @@ async function render() {
       mid = `<div class="puan">${score}<small>/10</small></div><div class="yorum">${cm ? "“" + esc(cm.replace(/^\[[^\]]+\]\s*/, "")) + "”" : ""}</div>`;
     } else if (sealed) {
       const key = `${id}-${k}`; if (!stamped.has(key)) { stamped.add(key); cls = "yeni"; }
-      mid = `<div class="muhur muhurlu">Mühürlü</div><div class="yorum" style="color:var(--muted)">Puan gizli · ${j.status === 1 ? "diğerleri bekleniyor" : "açılıyor"}</div>`;
+      mid = `<div class="muhur muhurlu">Sealed</div><div class="yorum" style="color:var(--muted)">Score hidden · ${j.status === 1 ? "waiting for the others" : "revealing"}</div>`;
     } else if (j.status === 1) {
-      mid = `<div class="muhur bekle">İnceliyor</div>`;
+      mid = `<div class="muhur bekle">Reviewing</div>`;
     } else {
-      mid = `<div class="muhur bekle">Oy yok</div>`;
+      mid = `<div class="muhur bekle">No vote</div>`;
     }
     let foot = "";
     const p = (paid[id] || {})[k], s = (slashes[id] || {})[k];
     if (j.status === 3) {
-      if (s) { cls += " cezali"; foot = `<div class="sonuc ceza">${score ? `Medyandan ${Math.abs(score - Number(j.finalScore))} puan sapma` : "Süresinde oy yok"} · −${fmt(s)} MON</div>`; }
+      if (s) { cls += " cezali"; foot = `<div class="sonuc ceza">${score ? `${Math.abs(score - Number(j.finalScore))} points off the median` : "Did not vote in time"} · −${fmt(s)} MON</div>`; }
       else if (p) {
         const feeShare = sumW ? (j.fee * BigInt(p.weight)) / BigInt(sumW) : 0n;
-        const split = slashTotal > 0n ? `<small>ücret ${fmt(feeShare)} + ceza payı ${fmt(p.reward - feeShare)}</small>` : "";
-        foot = `<div class="sonuc isabet">İsabet ${"●".repeat(p.weight)}${"○".repeat(3 - p.weight)} · +${fmt(p.reward)} MON${split}</div>`;
+        const split = slashTotal > 0n ? `<small>fee ${fmt(feeShare)} + penalty share ${fmt(p.reward - feeShare)}</small>` : "";
+        foot = `<div class="sonuc isabet">On target ${"●".repeat(p.weight)}${"○".repeat(3 - p.weight)} · +${fmt(p.reward)} MON${split}</div>`;
       }
     }
-    return `<article class="uye ${cls}"><div class="rn">Değerlendirici ${ROMAN[i]}</div>
+    return `<article class="uye ${cls}"><div class="rn">Reviewer ${ROMAN[i]}</div>
       <div class="adres">${short(a)}</div><div class="itibar">${acc}</div>${mid}${foot}</article>`;
   }).join("");
 
@@ -303,12 +303,12 @@ async function render() {
     const f = Number(j.finalScore);
     const pay = fin ? fin.pay : (f >= 8 ? j.amount : (j.amount * BigInt(f)) / 10n);
     box.className = "hukum goster";
-    box.innerHTML = `<div class="skor">${f || "—"}<small>/10</small></div>
-      <div class="metin">${f ? `Üç puanın medyanı ${f}. Freelancer'a ödenen: <b>${fmt(pay)} MON</b> (${f >= 8 ? "tamamı" : `%${f * 10}`}).
-          ${sumW ? (slashTotal > 0n ? `Ücret ve <b>${fmt(slashTotal)} MON</b> ceza isabetli değerlendiricilere bölündü.`
-                                    : "Ücret isabetli değerlendiricilere bölündü.") : ""}`
-                                : "Yeterli oy açılmadı. Ödeme ve ücret iş verene iade edildi."}</div>
-      ${fin ? `<a target="_blank" href="${CFG.explorer}/tx/${fin.tx}">İşlem ↗</a>` : "<span></span>"}`;
+    box.innerHTML = `<div class="skor">${f || "-"}<small>/10</small></div>
+      <div class="metin">${f ? `Median of the three scores: ${f}. Paid to the freelancer: <b>${fmt(pay)} MON</b> (${f >= 8 ? "full amount" : `${f * 10}%`}).
+          ${sumW ? (slashTotal > 0n ? `The fee and <b>${fmt(slashTotal)} MON</b> in penalties went to the reviewers on target.`
+                                    : "The fee went to the reviewers on target.") : ""}`
+                                : "Not enough votes were revealed. The payment and fee went back to the client."}</div>
+      ${fin ? `<a target="_blank" href="${CFG.explorer}/tx/${fin.tx}">Transaction ↗</a>` : "<span></span>"}`;
   } else box.className = "hukum";
 }
 
@@ -318,7 +318,7 @@ $("live").onclick = () => { follow = true; render(); };
 
 async function tick() {
   try { await pollEvents(); await render(); $("err").textContent = ""; }
-  catch (e) { $("err").textContent = "Bağlantı hatası: " + (e.shortMessage || e.message); }
+  catch (e) { $("err").textContent = "Connection error: " + (e.shortMessage || e.message); }
   setTimeout(tick, 1200);
 }
 tick();

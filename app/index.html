@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E100F">
-<title>Consilio · Değerlendirici</title>
+<title>Consilio · Reviewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -63,12 +63,12 @@
 <body>
 <header>
   <h1>Consilio</h1>
-  <div class="who"><span>Cüzdan <b id="addr">—</b></span><span>Bakiye <b id="bal">—</b> MON</span></div>
+  <div class="who"><span>Wallet <b id="addr">-</b></span><span>Balance <b id="bal">-</b> MON</span></div>
 </header>
 <nav>
-  <button id="t-rev" class="on">Görevler <span id="n-rev" hidden>0</span></button>
-  <button id="t-free">İş al</button>
-  <button id="t-me">Profil</button>
+  <button id="t-rev" class="on">Tasks <span id="n-rev" hidden>0</span></button>
+  <button id="t-free">Jobs</button>
+  <button id="t-me">Profile</button>
 </nav>
 <main id="view"></main>
 <div class="toast" id="toast"></div>
@@ -91,7 +91,7 @@ const ABI = [
 ];
 const ZERO = "0x0000000000000000000000000000000000000000";
 const ZERO32 = "0x" + "00".repeat(32);
-const STATUS = ["Açık", "Mühürlü oylama", "Açıklama", "Sonuçlandı", "İptal"];
+const STATUS = ["Open", "Sealed voting", "Revealing", "Finalized", "Cancelled"];
 
 // ---- ayarlar: URL'nin # kısmı > config.js ----
 const hp = new URLSearchParams(location.hash.slice(1));
@@ -111,7 +111,7 @@ const provider = new ethers.JsonRpcProvider(CFG.rpc);
 const wallet = new ethers.Wallet(key, provider);
 const c = new ethers.Contract(CFG.contract, ABI, wallet);
 const $ = (id) => document.getElementById(id);
-const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 5 });
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("en-US", { maximumFractionDigits: 5 });
 const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
 const coder = ethers.AbiCoder.defaultAbiCoder();
 $("addr").textContent = wallet.address.slice(0, 6) + "…" + wallet.address.slice(-4);
@@ -136,7 +136,7 @@ async function send(fnName, args, value = 0n) {
 async function act(label, f) {
   if (busy) return; busy = true; render();
   try { await f(); toast(label + " ✓"); }
-  catch (e) { toast("Hata: " + (e.shortMessage || e.reason || e.message).slice(0, 140), 6000); }
+  catch (e) { toast("Error: " + (e.shortMessage || e.reason || e.message).slice(0, 140), 6000); }
   finally { busy = false; await refresh(); }
 }
 
@@ -165,7 +165,7 @@ async function autoReveal() {
     if (!saved) continue;
     const s = JSON.parse(saved);
     busy = true;
-    try { await send("reveal", [j.id, s.score, s.salt, s.comment]); toast(`Dosya ${j.id}: oyun açıldı ✓`); }
+    try { await send("reveal", [j.id, s.score, s.salt, s.comment]); toast(`Job ${j.id}: vote revealed ✓`); }
     catch (e) { console.warn(e); }
     finally { busy = false; }
   }
@@ -173,23 +173,23 @@ async function autoReveal() {
 
 function countdown(dl) {
   const s = Number(dl) - now;
-  if (s <= 0) return "süre doldu";
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} kaldı`;
+  if (s <= 0) return "time is up";
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} left`;
 }
 
 // ------------------------------------------------------------------ görünümler
 function viewJoin() {
   const enough = me.bal > stakeMin;
   return `<div class="dosya">
-    <div class="etiket">Değerlendirici ol</div>
-    <p style="font:500 18px/1.45 var(--font);margin:0 0 10px">Freelancer teslimatlarını 1–10 arası puanla. Diğer iki değerlendiriciyle birbirinizin puanını görmeden oy verirsiniz.</p>
+    <div class="etiket">Become a reviewer</div>
+    <p style="font:500 18px/1.45 var(--font);margin:0 0 10px">Score freelancer deliveries from 1 to 10. You and two other reviewers vote without seeing each other's scores.</p>
     <ul class="kural">
-      <li><b>İsabet kazandırır:</b> nihai puan üç puanın medyanı. Ona ne kadar yakınsan değerlendirme ücretinden o kadar pay alırsın.</li>
-      <li><b>Sapma kaybettirir:</b> medyandan 3 puan ya da fazla saparsan veya süresinde oy vermezsen teminatından kesilir.</li>
-      <li><b>Kalıcı:</b> puanın ve yorumun zincire yazılır, sonradan değiştirilemez.</li>
+      <li><b>Accuracy pays:</b> the final score is the median of the three scores. The closer you are to it, the bigger your share of the review fee.</li>
+      <li><b>Missing costs you:</b> if you are 3 or more points off the median, or you do not vote in time, part of your stake is cut.</li>
+      <li><b>Permanent:</b> your score and comment are written on chain and cannot be changed later.</li>
     </ul>
-    <button class="btn" id="join" ${!enough || busy ? "disabled" : ""}>Teminat yatır · ${fmt(stakeMin)} MON</button>
-    ${enough ? "" : `<div class="hata">Bakiyen yetersiz. Kart cüzdanı kullanıyorsan organizatöre haber ver.</div>`}
+    <button class="btn" id="join" ${!enough || busy ? "disabled" : ""}>Deposit stake · ${fmt(stakeMin)} MON</button>
+    ${enough ? "" : `<div class="hata">Not enough balance. If you are using a card wallet, tell the organizer.</div>`}
   </div>`;
 }
 
@@ -199,85 +199,85 @@ function reviewCard(j) {
   const myScore = j.scores[i];
   let body = "";
   if (j.status === 1 && !committed) {
-    if (Number(j.commitDeadline) < now) body = `<div class="durum">Mühür süresi doldu.</div>`;
+    if (Number(j.commitDeadline) < now) body = `<div class="durum">Sealing time is over.</div>`;
     else {
       const d = draft[j.id] || {};
-      body = `<div class="etiket">Puanın (1–10)</div>
+      body = `<div class="etiket">Your score (1 to 10)</div>
         <div class="puan">${[1,2,3,4,5,6,7,8,9,10].map((n) => `<button data-score="${j.id}:${n}" class="${d.score === n ? "on" : ""}">${n}</button>`).join("")}</div>
-        <div class="etiket">Gerekçe</div>
-        <textarea data-comment="${j.id}" maxlength="140" placeholder="Kısa gerekçe…">${esc(d.comment || "")}</textarea>
+        <div class="etiket">Reason</div>
+        <textarea data-comment="${j.id}" maxlength="140" placeholder="Short reason…">${esc(d.comment || "")}</textarea>
         <div class="hata" id="err-${j.id}"></div>
-        <button class="btn" data-commit="${j.id}" ${busy ? "disabled" : ""}>Mühürle ve gönder</button>
-        <div class="durum">${countdown(j.commitDeadline)} · mühür ${j.commitCount}/3</div>`;
+        <button class="btn" data-commit="${j.id}" ${busy ? "disabled" : ""}>Seal and send</button>
+        <div class="durum">${countdown(j.commitDeadline)} · sealed ${j.commitCount}/3</div>`;
     }
   } else if (j.status === 1) {
-    body = `<div class="muhur gri">Mühürlendi</div><div class="durum">Diğer değerlendiriciler bekleniyor · ${j.commitCount}/3 · ${countdown(j.commitDeadline)}</div>`;
+    body = `<div class="muhur gri">Sealed</div><div class="durum">Waiting for the other reviewers · ${j.commitCount}/3 · ${countdown(j.commitDeadline)}</div>`;
   } else if (j.status === 2) {
-    body = myScore ? `<div class="muhur gri">Açıldı · ${myScore}/10</div><div class="durum">Diğer oylar açılıyor · ${j.revealCount}/${j.commitCount}</div>`
-                   : `<div class="muhur gri">Açılıyor…</div><div class="durum">Oyun otomatik açılacak</div>`;
+    body = myScore ? `<div class="muhur gri">Revealed · ${myScore}/10</div><div class="durum">Other votes are being revealed · ${j.revealCount}/${j.commitCount}</div>`
+                   : `<div class="muhur gri">Revealing…</div><div class="durum">Your vote will be revealed automatically</div>`;
   } else if (j.status === 3) {
     const fin = Number(j.finalScore);
-    if (!myScore) body = `<div class="muhur no">Oy yok</div><div class="kutu sari">Süresinde oy vermediğin için teminatından kesildi.</div>`;
+    if (!myScore) body = `<div class="muhur no">No vote</div><div class="kutu sari">You did not vote in time, so part of your stake was cut.</div>`;
     else {
       const dev = Math.abs(myScore - fin), w = dev >= 3 ? 0 : 3 - dev;
-      body = `<div class="muhur ${w ? "ok" : "no"}">${w ? "İsabet" : "Sapma"}</div>
-        <table><tr><td>Senin puanın</td><td>${myScore}/10</td></tr><tr><td>Nihai puan (medyan)</td><td>${fin}/10</td></tr>
-        <tr><td>İsabet ağırlığın</td><td>${"●".repeat(w)}${"○".repeat(3 - w)}</td></tr></table>
-        ${w ? "" : `<div class="kutu sari">Medyandan ${dev} puan saptın, teminatından kesildi.</div>`}`;
+      body = `<div class="muhur ${w ? "ok" : "no"}">${w ? "On target" : "Off target"}</div>
+        <table><tr><td>Your score</td><td>${myScore}/10</td></tr><tr><td>Final score (median)</td><td>${fin}/10</td></tr>
+        <tr><td>Your accuracy weight</td><td>${"●".repeat(w)}${"○".repeat(3 - w)}</td></tr></table>
+        ${w ? "" : `<div class="kutu sari">You were ${dev} points off the median, so part of your stake was cut.</div>`}`;
     }
   }
   if ((j.status === 1 && Number(j.commitDeadline) < now) || (j.status === 2 && Number(j.revealDeadline) < now))
-    body += `<button class="btn ghost" data-tick="${j.id}" ${busy ? "disabled" : ""}>Süreyi ilerlet</button>`;
-  return `<div class="dosya"><h2>Dosya No. ${j.id} <small>${STATUS[j.status]}</small></h2>
-    <div class="etiket">Şartname</div><pre>${esc(j.spec)}</pre>
-    <div class="etiket">Teslimat</div><pre>${esc(j.deliverable)}</pre>${body}</div>`;
+    body += `<button class="btn ghost" data-tick="${j.id}" ${busy ? "disabled" : ""}>Advance</button>`;
+  return `<div class="dosya"><h2>Job #${j.id} <small>${STATUS[j.status]}</small></h2>
+    <div class="etiket">Brief</div><pre>${esc(j.spec)}</pre>
+    <div class="etiket">Delivery</div><pre>${esc(j.deliverable)}</pre>${body}</div>`;
 }
 
 function viewReviews() {
   if (!me.registered) return viewJoin();
   const mine = jobs.filter((j) => mySlot(j) >= 0 && j.status !== 4).reverse();
   let top = "";
-  if (me.stake < stakeMin) top = `<div class="kutu sari">Teminatın cezalar yüzünden eşiğin altında, yeni görev alamazsın.
-      <button class="btn" id="topup" ${busy ? "disabled" : ""}>Teminatı tamamla · ${fmt(stakeMin - me.stake)} MON</button></div>`;
-  if (!mine.length) return top + `<div class="bos">Havuzdasın. Sana bir teslimat atandığında burada görünecek.</div>`;
+  if (me.stake < stakeMin) top = `<div class="kutu sari">Your stake is below the minimum because of penalties. You cannot get new tasks until you top it up.
+      <button class="btn" id="topup" ${busy ? "disabled" : ""}>Top up stake · ${fmt(stakeMin - me.stake)} MON</button></div>`;
+  if (!mine.length) return top + `<div class="bos">You are in the pool. A delivery will show up here when it is assigned to you.</div>`;
   return top + mine.map(reviewCard).join("");
 }
 
 function viewFreelance() {
   const open = jobs.filter((j) => j.status === 0 && (j.worker === ZERO || j.worker.toLowerCase() === wallet.address.toLowerCase())).reverse();
   const mine = jobs.filter((j) => j.worker.toLowerCase() === wallet.address.toLowerCase() && j.status >= 1).reverse();
-  let html = open.length ? open.map((j) => `<div class="dosya"><h2>Dosya No. ${j.id} <small>${fmt(j.amount)} MON</small></h2>
-      <div class="etiket">Şartname</div><pre>${esc(j.spec)}</pre>
-      <div class="etiket">Teslimatın</div><textarea data-deliv="${j.id}" placeholder="İşini buraya yaz…">${esc((draft["d" + j.id]) || "")}</textarea>
+  let html = open.length ? open.map((j) => `<div class="dosya"><h2>Job #${j.id} <small>${fmt(j.amount)} MON</small></h2>
+      <div class="etiket">Brief</div><pre>${esc(j.spec)}</pre>
+      <div class="etiket">Your delivery</div><textarea data-deliv="${j.id}" placeholder="Write your work here…">${esc((draft["d" + j.id]) || "")}</textarea>
       <div class="hata" id="derr-${j.id}"></div>
-      <button class="btn" data-submit="${j.id}" ${busy ? "disabled" : ""}>Teslim et</button>
-      <div class="durum">Teslim edince havuzdan rastgele 3 değerlendirici atanır. Puan 8+ ise tam ödeme, altındaysa puan oranında.</div></div>`).join("")
-    : `<div class="bos">Şu an açık iş yok.</div>`;
-  if (mine.length) html += `<div class="etiket">Teslim ettiklerin</div>` + mine.map((j) => {
+      <button class="btn" data-submit="${j.id}" ${busy ? "disabled" : ""}>Submit</button>
+      <div class="durum">After you submit, 3 reviewers are picked at random from the pool. A score of 8 or more pays in full. Lower scores pay in proportion.</div></div>`).join("")
+    : `<div class="bos">No open jobs right now.</div>`;
+  if (mine.length) html += `<div class="etiket">Your submissions</div>` + mine.map((j) => {
     const fin = Number(j.finalScore);
     const pay = j.status === 3 ? (fin >= 8 ? j.amount : (j.amount * BigInt(fin)) / 10n) : null;
-    return `<div class="dosya"><h2>Dosya No. ${j.id} <small>${STATUS[j.status]}</small></h2>
-      ${j.status === 3 ? `<table><tr><td>Nihai puan</td><td>${fin}/10</td></tr><tr><td>Aldığın ödeme</td><td>${fmt(pay)} MON</td></tr></table>`
-                       : `<div class="durum">Değerlendiriliyor · mühür ${j.commitCount}/3 · açılan ${j.revealCount}</div>`}</div>`;
+    return `<div class="dosya"><h2>Job #${j.id} <small>${STATUS[j.status]}</small></h2>
+      ${j.status === 3 ? `<table><tr><td>Final score</td><td>${fin}/10</td></tr><tr><td>Your payment</td><td>${fmt(pay)} MON</td></tr></table>`
+                       : `<div class="durum">Under review · sealed ${j.commitCount}/3 · revealed ${j.revealCount}</div>`}</div>`;
   }).join("");
   return html;
 }
 
 function viewMe() {
   const acc = me.reviews ? Math.round((Number(me.weightSum) / (3 * Number(me.reviews))) * 100) : 0;
-  return `<div class="dosya"><div class="etiket" style="margin-top:0">İtibar</div>
+  return `<div class="dosya"><div class="etiket" style="margin-top:0">Reputation</div>
     <table>
-      <tr><td>İsabet oranı</td><td>%${acc}</td></tr>
-      <tr><td>Sonuçlanan değerlendirme</td><td>${me.reviews}</td></tr>
-      <tr><td>Toplam kazanç</td><td>${fmt(me.earned)} MON</td></tr>
-      <tr><td>Toplam ceza</td><td>${fmt(me.slashed)} MON</td></tr>
-      <tr><td>Teminat</td><td>${fmt(me.stake)} MON</td></tr>
+      <tr><td>Accuracy</td><td>${acc}%</td></tr>
+      <tr><td>Finished reviews</td><td>${me.reviews}</td></tr>
+      <tr><td>Total earned</td><td>${fmt(me.earned)} MON</td></tr>
+      <tr><td>Total penalties</td><td>${fmt(me.slashed)} MON</td></tr>
+      <tr><td>Stake</td><td>${fmt(me.stake)} MON</td></tr>
     </table>
-    <div class="durum"><a target="_blank" href="${CFG.explorer}/address/${wallet.address}">Cüzdanı explorer'da gör ↗</a></div></div>`;
+    <div class="durum"><a target="_blank" href="${CFG.explorer}/address/${wallet.address}">View wallet on explorer ↗</a></div></div>`;
 }
 
 function render() {
-  if (!me) { $("view").innerHTML = `<div class="bos">Zincire bağlanılıyor…</div>`; return; }
+  if (!me) { $("view").innerHTML = `<div class="bos">Connecting to the chain…</div>`; return; }
   const pending = jobs.filter((j) => { const i = mySlot(j); return i >= 0 && j.status === 1 && j.commits[i] === ZERO32 && Number(j.commitDeadline) > now; }).length;
   $("n-rev").hidden = !pending; $("n-rev").textContent = pending;
   // yazarken odak kaybolmasın: textarea odaktaysa yeniden çizme
@@ -292,26 +292,26 @@ document.addEventListener("click", (e) => {
   if (t.id === "t-rev" || t.id === "t-free" || t.id === "t-me") {
     tab = t.id.slice(2); document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b === t)); render(); return;
   }
-  if (t.id === "join") return act("Havuza katıldın", () => send("register", [], stakeMin));
-  if (t.id === "topup") return act("Teminat tamamlandı", () => send("topUp", [], stakeMin - me.stake));
+  if (t.id === "join") return act("You joined the pool", () => send("register", [], stakeMin));
+  if (t.id === "topup") return act("Stake topped up", () => send("topUp", [], stakeMin - me.stake));
   if (t.dataset.score) {
     const [jid, n] = t.dataset.score.split(":").map(Number);
     draft[jid] = { ...(draft[jid] || {}), score: n }; render(); return;
   }
   if (t.dataset.commit) {
     const jid = Number(t.dataset.commit), d = draft[jid] || {};
-    if (!d.score) { $("err-" + jid).textContent = "Önce 1–10 arası bir puan seç."; return; }
+    if (!d.score) { $("err-" + jid).textContent = "Pick a score from 1 to 10 first."; return; }
     const comment = (d.comment || "").trim();
     const salt = ethers.hexlify(ethers.randomBytes(32));
     store.set(saltKey(jid), JSON.stringify({ score: d.score, salt, comment })); // açmak için bu telefonda saklanır
     const hash = ethers.keccak256(coder.encode(["uint256", "address", "uint8", "bytes32", "string"], [jid, wallet.address, d.score, salt, comment]));
-    return act("Oyun mühürlendi", () => send("commit", [jid, hash]));
+    return act("Vote sealed", () => send("commit", [jid, hash]));
   }
-  if (t.dataset.tick) return act("Süre ilerletildi", () => send("finalize", [Number(t.dataset.tick)]));
+  if (t.dataset.tick) return act("Advanced", () => send("finalize", [Number(t.dataset.tick)]));
   if (t.dataset.submit) {
     const jid = Number(t.dataset.submit), text = (draft["d" + jid] || "").trim();
-    if (!text) { $("derr-" + jid).textContent = "Teslimat boş olamaz."; return; }
-    return act("Teslim edildi", () => send("submit", [jid, text]));
+    if (!text) { $("derr-" + jid).textContent = "Delivery cannot be empty."; return; }
+    return act("Submitted", () => send("submit", [jid, text]));
   }
 });
 document.addEventListener("input", (e) => {
@@ -322,7 +322,7 @@ document.addEventListener("input", (e) => {
 document.addEventListener("focusout", () => setTimeout(render, 0));
 
 (async () => {
-  if (!CFG.contract) { $("view").innerHTML = `<div class="bos">Kontrat adresi yok. QR kartını okut ya da config.js'i kontrol et.</div>`; return; }
+  if (!CFG.contract) { $("view").innerHTML = `<div class="bos">No contract address. Scan your QR card.</div>`; return; }
   stakeMin = await c.reviewerStake();
   await refresh();
   setInterval(refresh, 2500);

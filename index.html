@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E100F">
 <title>Consilio</title>
-<meta name="description" content="Freelance teslimatlarını üç bağımsız değerlendirici puanlar. Ödemeyi medyan puan belirler. Monad testnet.">
+<meta name="description" content="Three independent reviewers score each freelance delivery. The median score sets the payment. Built on Monad testnet.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -80,8 +80,8 @@
   <header class="top">
     <span class="ad">Consilio</span>
     <nav>
-      <a id="navDash" href="dashboard/">Canlı ekran</a>
-      <a id="navContract" href="#" target="_blank">Kontrat</a>
+      <a id="navDash" href="dashboard/">Live screen</a>
+      <a id="navContract" href="#" target="_blank">Contract</a>
       <a href="https://github.com/fkuyumcu/Monad-Blitz" target="_blank">GitHub</a>
     </nav>
   </header>
@@ -89,57 +89,57 @@
   <main>
     <div class="hero">
       <h1>Consilio</h1>
-      <p>Freelance teslimatlarını üç bağımsız değerlendirici puanlar. <span>Ödemeyi medyan puan belirler.</span></p>
+      <p>Three independent reviewers score each freelance delivery. <span>The median score sets the payment.</span></p>
       <div class="cta">
-        <a class="btn" id="ctaDash" href="dashboard/">Canlı ekranı aç</a>
-        <a class="btn ghost" id="ctaContract" href="#" target="_blank">Kontratı incele</a>
+        <a class="btn" id="ctaDash" href="dashboard/">Open live screen</a>
+        <a class="btn ghost" id="ctaContract" href="#" target="_blank">View contract</a>
       </div>
     </div>
 
     <section>
-      <p class="baslik">Bir iş nasıl sonuçlanır</p>
+      <p class="baslik">How a job gets settled</p>
       <ol class="akis">
-        <li><b>İş veren</b><span>Ödemeyi kontrata kilitler. Tutarın %10'u değerlendirme ücreti olarak ayrılır.</span></li>
-        <li><b>Freelancer</b><span>İşi teslim eder. Kontrat, teminat yatırmış havuzdan rastgele üç değerlendirici seçer.</span></li>
-        <li><b>Değerlendiriciler</b><span>Birbirinin puanını görmeden 1–10 arası puan verir. Oylar önce mühürlenir, sonra birlikte açılır.</span></li>
-        <li><b>Kontrat</b><span>Medyanı hesaplar. Ödemeyi, ücreti ve cezaları dağıtır.</span></li>
+        <li><b>Client</b><span>Locks the payment in the contract. 10% of it is set aside as the review fee.</span></li>
+        <li><b>Freelancer</b><span>Submits the work. The contract picks three reviewers at random from a staked pool.</span></li>
+        <li><b>Reviewers</b><span>Score from 1 to 10 without seeing each other's scores. Votes are sealed first, then revealed together.</span></li>
+        <li><b>Contract</b><span>Computes the median. Pays out the payment, the fee and the penalties.</span></li>
       </ol>
 
       <div class="ornek">
-        <p class="baslik">Örnek</p>
+        <p class="baslik">Example</p>
         <div class="puanlar">
-          <div>6<small>Değerlendirici I</small></div>
-          <div>6<small>Değerlendirici II</small></div>
-          <div class="dis">10<small>Değerlendirici III</small></div>
-          <div class="med">6<small>Medyan</small></div>
+          <div>6<small>Reviewer I</small></div>
+          <div>6<small>Reviewer II</small></div>
+          <div class="dis">10<small>Reviewer III</small></div>
+          <div class="med">6<small>Median</small></div>
         </div>
-        <p>Freelancer ödemenin %60'ını alır. 10 veren değerlendirici medyandan 4 puan saptığı için teminatından kaybeder. O tutar diğer ikisine bölünür.</p>
+        <p>The freelancer gets 60% of the payment. The reviewer who gave 10 was 4 points off the median, so part of their stake is cut and split between the other two.</p>
       </div>
     </section>
 
     <section>
-      <p class="baslik">Kurallar</p>
+      <p class="baslik">Rules</p>
       <div class="kurallar">
-        <div><strong>8+</strong><p><b>Tam ödeme.</b> Medyan 8'in altındaysa freelancer puan oranında alır, kalanı iş verene döner.</p></div>
-        <div><strong>±3</strong><p><b>Ceza sınırı.</b> Medyandan 3 puan ya da daha fazla sapan, oy vermeyen veya oyunu açmayan teminatından kaybeder.</p></div>
-        <div><strong>3–2–1</strong><p><b>Ücret payı.</b> Medyana tam isabet 3, bir puan fark 2, iki puan fark 1 pay alır. Ücret ve cezalar bu paylara göre bölünür.</p></div>
+        <div><strong>8+</strong><p><b>Full payment.</b> Below a median of 8, the freelancer is paid in proportion and the rest goes back to the client.</p></div>
+        <div><strong>±3</strong><p><b>Penalty line.</b> A reviewer who is 3 or more points off the median, or who does not vote or reveal, loses part of their stake.</p></div>
+        <div><strong>3-2-1</strong><p><b>Fee share.</b> An exact match gets 3 shares, 1 point off gets 2, 2 points off gets 1. The fee and penalties are split by these shares.</p></div>
       </div>
     </section>
 
     <section class="canli">
-      <p class="baslik">Monad testnet, şu an</p>
+      <p class="baslik">Monad testnet, right now</p>
       <div class="sayilar">
-        <div><strong id="sPool">—</strong><span>Havuzdaki değerlendirici</span></div>
-        <div><strong id="sJobs">—</strong><span>Açılan iş</span></div>
-        <div><strong id="sLocked">—</strong><span>Kontratta kilitli</span></div>
+        <div><strong id="sPool">-</strong><span>Reviewers in pool</span></div>
+        <div><strong id="sJobs">-</strong><span>Jobs opened</span></div>
+        <div><strong id="sLocked">-</strong><span>Locked in contract</span></div>
       </div>
-      <p class="not">Kontrat: <a id="addrLink" href="#" target="_blank"></a></p>
+      <p class="not">Contract: <a id="addrLink" href="#" target="_blank"></a></p>
     </section>
   </main>
 
   <footer>
-    <span>Consilio · Monad Blitz İstanbul, 2026</span>
-    <a href="https://github.com/fkuyumcu/Monad-Blitz" target="_blank">Kaynak kod</a>
+    <span>Consilio · Monad Blitz Istanbul, 2026</span>
+    <a href="https://github.com/fkuyumcu/Monad-Blitz" target="_blank">Source code</a>
   </footer>
 </div>
 
@@ -156,7 +156,7 @@ $("navDash").href = $("ctaDash").href = dash;
 $("navContract").href = $("ctaContract").href = $("addrLink").href = explorer;
 $("addrLink").textContent = CFG.contract;
 
-const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 3 });
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("en-US", { maximumFractionDigits: 3 });
 async function load() {
   try {
     const provider = new ethers.JsonRpcProvider(CFG.rpc);

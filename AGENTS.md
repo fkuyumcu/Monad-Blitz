@@ -50,4 +50,4 @@ vendor/qrcode.js           qrcode-generator 1.4.4 (MIT)
 - Oylama sayımı, medyan, ödeme ve ceza **zincirde** kalmalı.
 - Mühür hash'i: `keccak256(abi.encode(jobId, reviewer, score, salt, comment))`. `chain.commit_hash` ve app'teki JS aynı olmalı. Test bunu kontrol ediyor.
 - Monad gas'ı verilen **limite** göre keser. Python'da `chain.send()`, JS'te `send()` (tahmin × 1.15) kullan.
-- Python ≥ 3.10. Arayüz metinleri Türkçe, kod tanımlayıcıları İngilizce.
+- Python ≥ 3.10. Arayüz metinleri İngilizce ve sade (uzun çizgi yok), kod tanımlayıcıları İngilizce. Ajanla konuşma dili Türkçe.
