@@ -5,6 +5,8 @@ teslimatı şartnameye göre değerlendirir ve her biri oyunu **kendi cüzdanıy
 En az 2 hakem aynı oyu verdiğinde para ya iş yapana gider ya da iş verene iade edilir.
 Çoğunluğa ters oy veren hakemin teminatı kesilir ve kesilen tutar haklı çıkan tarafa gider.
 
+Ajanlar için giriş noktası: [`AGENTS.md`](AGENTS.md) · Mimari ve kontrat dokümanı: [`docs/AI-Hakemli-Emanet-Mimari.pdf`](docs/AI-Hakemli-Emanet-Mimari.pdf)
+
 ```
 contracts/AIEscrow.sol   kontrat (Solidity)
 build/AIEscrow.json      derlenmiş hali (abi + bytecode), hazır
