@@ -174,7 +174,6 @@
 const DEFAULT_RPC = "https://testnet-rpc.monad.xyz";
 const EXPLORER = "https://testnet.monadvision.com";
 const PAGES_APP = "https://fkuyumcu.github.io/Monad-Blitz/app/";
-const GAS_PER_ACTION = 350000n; // deploy.py ile aynı cömert üst sınır
 const ZERO = "0x0000000000000000000000000000000000000000";
 const ZERO32 = "0x" + "00".repeat(32);
 const STATUS = ["Açık", "Mühürlü oylama", "Oylar açılıyor", "Sonuçlandı", "İptal"];
@@ -235,9 +234,10 @@ const jobs = new Map(), finished = new Set();
 let busy = false;
 
 function rpcUrl() { return ($("rpc").value.trim() || DEFAULT_RPC); }
-function budget(actions) { return (gasPrice * GAS_PER_ACTION * BigInt(actions) * 13n) / 10n; }
-const BOT_FUND = () => stakeMin * 2n + budget(40);
-const CARD_FUND = () => stakeMin * 2n + budget(15);
+// Ölçülen gas limitleri: register ~133k, commit ~75k, reveal(+sonuç) ~226k, submit ~221k → görev başına ~320k
+const gasCost = (gas) => (gasPrice * BigInt(gas) * 12n) / 10n;
+const BOT_FUND = () => stakeMin * 2n + gasCost(150000 + 10 * 320000);  // ~10 görev + bekçilik
+const CARD_FUND = () => stakeMin * 2n + gasCost(150000 + 3 * 320000);  // ~3 görev
 
 // Ana cüzdanın işlemleri sıraya girer (nonce çakışmasın)
 let ownerQ = Promise.resolve();
@@ -484,9 +484,8 @@ async function ensureWorker() {
     store.set(kc("worker"), worker.privateKey);
     log(`Freelancer cüzdanı oluşturuldu: ${short(worker.address)}`);
   }
-  const need = budget(4) > ethers.parseEther("0.005") ? budget(4) : ethers.parseEther("0.005");
-  if ((await provider.getBalance(worker.address)) < need) {
-    const amt = need * 3n;
+  if ((await provider.getBalance(worker.address)) < gasCost(300000)) {
+    const amt = gasCost(250000 * 6); // ~6 teslimat
     const r = await viaOwner(() => transfer(owner, worker.address, amt));
     log(`Freelancer cüzdanına ${fmt(amt)} MON gas parası gönderildi${txLink(r)}`);
   }
