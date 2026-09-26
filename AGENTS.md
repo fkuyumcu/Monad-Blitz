@@ -24,6 +24,7 @@ Proje gün içinde "AI hakemli emanet"ten (AIEscrow) bu tasarıma **pivot** etti
 
 ## Dosya haritası
 ```
+KONTRAT.md                 kontratın sade anlatımı + canlı testnet deploy bilgileri (jüri/takım için)
 contracts/PeerReview.sol   tek kontrat (Solidity 0.8.28, viaIR, cancun)
 build/PeerReview.json      derlenmiş abi + bytecode (commit'li; kontrat değişirse yeniden üret)
 compile.js                 contracts/*.sol → build/<Ad>.json
