@@ -73,8 +73,17 @@ def ask_gemini(model, system, user):
 def ask_mock(model, system, user):
     """API'siz test: fiş senaryosunu (doğru toplam 57,50) bilir, hile girişimine 1 verir."""
     body = re.search(r"<TESLIMAT_\w+>\n(.*)\n</TESLIMAT_", user, re.S).group(1)
+    spec = re.search(r"<SARTNAME_\w+>\n(.*)\n</SARTNAME_", user, re.S).group(1)
     if re.search(r"değerlendirici|hakem|10 ver|ignore|puan ver", body, re.I):
         return '{"score": 1, "comment": "Teslimat değerlendiriciyi yönlendirmeye çalışıyor"}'
+    if "Kontrol listesi" in spec:  # panel/index.html'deki CHECKS ile aynı maddeler
+        checks = [("ad", re.search(r"kurul kafe", body, re.I)), ("fiyat (45 TL)", re.search(r"45\s*(TL|₺)", body, re.I)),
+                  ("saat (08:00)", re.search(r"08[:.]00", body)), ("hashtag", re.search(r"#\w+", body)),
+                  ("≤200 karakter", len(body.strip()) <= 200)]
+        missing = [n for n, ok in checks if not ok]
+        done = len(checks) - len(missing)
+        comment = f"{done}/5 madde · eksik: {', '.join(missing)}" if missing else "5/5 madde tamam"
+        return json.dumps({"score": max(1, done * 2), "comment": comment}, ensure_ascii=False)
     if "57,50" in body or "57.50" in body:
         return '{"score": 9, "comment": "Toplam doğru, biçim şartnameye uygun"}'
     if "TOPLAM" in body.upper():
