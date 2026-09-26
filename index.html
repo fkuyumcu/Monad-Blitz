@@ -53,6 +53,13 @@
   .puanlar .dis { opacity:.45; }
   .ornek p { margin:clamp(18px,3vh,28px) 0 0; max-width:34em; font:500 clamp(17px,1.5vw,21px)/1.4 var(--font); }
 
+  .gorev { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,48px); margin-bottom:clamp(20px,3vh,32px); }
+  .gorev h3 { margin:0 0 8px; font:700 clamp(20px,1.8vw,26px)/1.2 var(--font); letter-spacing:-.01em; }
+  .ornek .gorev p { margin:0; max-width:none; font:500 17px/1.5 var(--font); }
+  ol.kontrol { margin:0; padding-left:22px; font:500 16px/1.65 var(--font); }
+  .kayit { background:rgba(14,16,15,.14); border-radius:var(--r); padding:14px 18px; margin-bottom:clamp(24px,4vh,40px); font:500 16px/1.6 var(--font); }
+  .kayit b { font-weight:700; }
+  .kayit mark { background:var(--bg); color:#C6F36B; padding:1px 5px; border-radius:3px; }
   .kurallar { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,48px); }
   .kurallar div { border-top:2px solid var(--text); padding-top:18px; }
   .kurallar strong { display:block; font:700 clamp(28px,2.8vw,40px)/1 var(--font); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
@@ -70,7 +77,7 @@
 
   @media (max-width:760px) {
     .akis li { grid-template-columns:1fr; gap:6px; }
-    .kurallar, .canli .sayilar { grid-template-columns:1fr; }
+    .kurallar, .canli .sayilar, .gorev { grid-template-columns:1fr; }
     .top nav { gap:18px; font-size:16px; }
   }
 </style>
@@ -106,14 +113,32 @@
       </ol>
 
       <div class="ornek">
-        <p class="baslik">Example</p>
+        <p class="baslik">Example: a real AI training data task</p>
+        <div class="gorev">
+          <div>
+            <h3>Voice editing session</h3>
+            <p>A contributor selects text on screen, gives a spoken command in Turkish, and an LLM rewrites only the selected text. They submit the audio, the transcript and a short log.</p>
+          </div>
+          <ol class="kontrol">
+            <li>Audio file and transcript are included</li>
+            <li>The selected text is quoted</li>
+            <li>Technical terms and meaning are kept</li>
+            <li>Output is checked and adds no new facts</li>
+            <li>Cursor position and task metadata are filled in</li>
+          </ol>
+        </div>
+        <div class="kayit">
+          <div><b>Command:</b> "seçili cümleyi daha resmi yap"</div>
+          <div><b>Selected text:</b> "API token süresi dolunca 401 dönüyor."</div>
+          <div><b>LLM output:</b> "API token süresi dolduğunda sunucu 401 yanıtı döndürür <mark>ve 30 saniye sonra yeniden dener</mark>."</div>
+        </div>
         <div class="puanlar">
           <div>6<small>Reviewer I</small></div>
           <div>6<small>Reviewer II</small></div>
           <div class="dis">10<small>Reviewer III</small></div>
           <div class="med">6<small>Median</small></div>
         </div>
-        <p>The freelancer gets 60% of the payment. The reviewer who gave 10 was 4 points off the median, so part of their stake is cut and split between the other two.</p>
+        <p>The output added a retry rule that was not in the selected text, and the cursor and metadata fields are missing. Two reviewers caught it and gave 6. The reviewer who gave 10 without checking loses part of their stake. The freelancer gets 60% of the payment.</p>
       </div>
     </section>
 

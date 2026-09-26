@@ -76,6 +76,19 @@ def ask_mock(model, system, user):
     spec = re.search(r"<SARTNAME_\w+>\n(.*)\n</SARTNAME_", user, re.S).group(1)
     if re.search(r"reviewer|ignore the rules|give it 10|değerlendirici|hakem|puan ver", body, re.I):
         return '{"score": 1, "comment": "The delivery tries to steer the reviewers"}'
+    if spec.startswith("Voice editing task"):  # same items as VOICE_CHECKS in panel/index.html
+        def field(name):
+            m = re.search(rf"^{name}:[ \t]*(.+)$", body, re.I | re.M)
+            return m.group(1).strip() if m else ""
+        src, out = field("Selected text"), field("LLM output")
+        checks = [("audio + transcript", field("Audio") and field("Transcript")), ("selected text", src),
+                  ("terms kept", src and out and all(w in out for w in re.findall(r"\b(?:[A-Z]{2,}|\d+)\b", src))),
+                  ("no new facts", field("Checked") and out and all(n in src for n in re.findall(r"\d+", out))),
+                  ("cursor + metadata", field("Cursor") and field("Metadata"))]
+        missing = [n for n, ok in checks if not ok]
+        done = len(checks) - len(missing)
+        comment = f"{done}/5 items · missing: {', '.join(missing)}" if missing else "5/5 items met"
+        return json.dumps({"score": max(1, done * 2), "comment": comment})
     if "Checklist:" in spec:  # same items as CHECKS in panel/index.html
         checks = [("name", re.search(r"consilio cafe", body, re.I)), ("price ($4)", re.search(r"\$\s*4\b", body)),
                   ("time (08:00)", re.search(r"\b0?8[:.]00", body)), ("hashtag", re.search(r"#\w+", body)),
