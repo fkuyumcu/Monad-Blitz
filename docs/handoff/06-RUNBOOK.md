@@ -7,6 +7,15 @@ npm install                                    # sadece kontratı yeniden derlem
 cp .env.example .env                           # DEPLOYER_KEY
 ```
 
+## Terminalsiz yol: kontrol paneli (`panel/`)
+```bash
+python3 -m http.server 8080        # repo kökünden
+# tarayıcı: http://localhost:8080/panel/
+```
+Private key yapıştır → Cüzdanı bağla → Deploy → 3 bot kur → Senaryolar → QR kart. Botlar panel sekmesinde çalışır
+(sekme açık kalmalı). Anahtarlar (ana cüzdan, bot, freelancer, kart) sadece o tarayıcının localStorage'ında durur.
+Büyük ekran ve telefon linkleri kontratı `#c=` ile taşır, `config.js` gerekmez.
+
 ## Komutlar
 ```bash
 node compile.js                                # contracts/ → build/

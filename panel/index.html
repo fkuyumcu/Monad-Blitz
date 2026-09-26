@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kurul · Kontrol paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f3eee3; --paper2:#ebe4d5; --ink:#16130f; --soft:#5c554a; --kabul:#1d6a3a; --ret:#c0271d; --ceza:#fbe7b0;
+          --serif:"Fraunces",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"IBM Plex Sans",system-ui,sans-serif; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--paper); color:var(--ink); }
+  body { font:15px/1.5 var(--sans); }
+  main { max-width:1280px; margin:0 auto; padding:18px 24px 40px; }
+  a { color:inherit; text-underline-offset:3px; }
+  .mast { border-bottom:4px double var(--ink); padding-bottom:10px; display:flex; align-items:end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .mast h1 { margin:0; font:800 44px/1 var(--serif); letter-spacing:-.02em; }
+  .mast .kunye { font:400 12px var(--mono); text-transform:uppercase; letter-spacing:.08em; }
+  .cols { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:0; }
+  .cols > div + div { border-left:1px solid var(--ink); padding-left:24px; }
+  .cols > div:first-child { padding-right:24px; }
+  section { border-bottom:1px solid var(--ink); padding:14px 0 16px; }
+  h2 { margin:0 0 8px; font:600 22px var(--serif); display:flex; align-items:center; gap:10px; }
+  h2 .n { font:600 13px var(--mono); border:1.5px solid var(--ink); width:26px; height:26px; display:inline-grid; place-items:center; flex:none; }
+  h2 .ok { margin-left:auto; font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--kabul); border:1.5px solid var(--kabul); padding:1px 6px; }
+  .not { margin:0 0 10px; color:var(--soft); font-size:14px; }
+  label { display:block; font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.1em; color:var(--soft); margin:8px 0 3px; }
+  input, select { width:100%; font:14px var(--mono); border:1.5px solid var(--ink); background:#fff; padding:8px 9px; border-radius:0; color:var(--ink); }
+  .grid5 { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .btn { font:600 13px var(--mono); text-transform:uppercase; letter-spacing:.05em; background:var(--ink); color:var(--paper); border:1.5px solid var(--ink);
+         padding:10px 14px; cursor:pointer; }
+  .btn.ghost { background:transparent; color:var(--ink); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn.big { font-size:14px; padding:13px 16px; }
+  table { width:100%; border-collapse:collapse; font:13px var(--mono); margin-top:8px; }
+  th { text-align:left; font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.08em; border-bottom:1.5px solid var(--ink); padding:3px 8px 3px 0; }
+  td { padding:5px 8px 5px 0; border-bottom:1px dotted var(--soft); vertical-align:top; }
+  td select { padding:3px 4px; font-size:12px; width:auto; }
+  .kv td:first-child { color:var(--soft); width:38%; }
+  .links a { display:block; font:600 14px var(--mono); margin-top:6px; }
+  .uyari { background:var(--ceza); border:1.5px solid var(--ink); padding:8px 10px; font-size:13px; margin-top:8px; }
+  .hata { color:var(--ret); }
+  .scn { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
+  .scn .btn { text-align:left; text-transform:none; letter-spacing:0; font-size:14px; }
+  .scn .btn small { display:block; font:400 12px var(--mono); opacity:.75; margin-top:2px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); border-top:1px solid var(--ink); margin-top:12px; }
+  .card { border-right:1px solid var(--ink); border-bottom:1px solid var(--ink); padding:10px; text-align:center; background:#fff; break-inside:avoid; }
+  .card svg { width:100%; max-width:170px; height:auto; display:block; margin:6px auto; }
+  .card .no { font:600 12px var(--mono); letter-spacing:.1em; text-transform:uppercase; }
+  .card .ad { font:11px var(--mono); color:var(--soft); }
+  .card a { font:600 11px var(--mono); }
+  ol.log { list-style:none; margin:0; padding:0; max-height:420px; overflow:auto; font:13px var(--mono); }
+  ol.log li { display:grid; grid-template-columns:70px 1fr; gap:10px; padding:4px 0; border-top:1px dotted var(--soft); }
+  ol.log li:first-child { border-top:0; }
+  ol.log li.err { color:var(--ret); }
+  ol.log li.ok { color:var(--kabul); }
+  ol.log time { color:var(--soft); }
+  .sure { color:var(--soft); }
+  .printonly { display:none; }
+  @media (max-width:900px) {
+    main { padding:12px 16px 32px; } .cols { grid-template-columns:1fr; }
+    .cols > div + div { border-left:0; padding-left:0; } .cols > div:first-child { padding-right:0; }
+    .grid5 { grid-template-columns:repeat(2,minmax(0,1fr)); } .scn { grid-template-columns:1fr; }
+  }
+  @media print {
+    body * { visibility:hidden; } #printArea, #printArea * { visibility:visible; }
+    #printArea { position:absolute; left:0; top:0; width:100%; } .printonly { display:block; font:600 18px var(--serif); margin:0 0 8px; }
+    .card a { display:none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="mast">
+    <div><h1>Kurul</h1><div class="kunye">Kontrol paneli · deploy, botlar, senaryolar ve QR kartlar tek sayfada</div></div>
+    <div class="kunye" id="net">bağlı değil</div>
+  </header>
+
+  <div class="cols">
+  <div>
+    <section id="s1">
+      <h2><span class="n">1</span> Cüzdan <span class="ok" id="ok1" hidden>hazır</span></h2>
+      <p class="not">Faucet'ten MON aldığın cüzdanın private key'ini yapıştır (MetaMask → Hesap detayları → Private key'i göster).
+        Anahtar sadece bu tarayıcıda saklanır, hiçbir sunucuya gönderilmez. <b>Sadece test ağı cüzdanı kullan.</b></p>
+      <label for="key">Private key</label>
+      <input id="key" type="password" placeholder="0x… (64 karakter)" autocomplete="off" spellcheck="false">
+      <label for="rpc">RPC adresi</label>
+      <input id="rpc" spellcheck="false">
+      <div class="row"><button class="btn" id="connect">Cüzdanı bağla</button><button class="btn ghost" id="forget">Anahtarı unut</button></div>
+      <table class="kv" id="walletInfo"></table>
+    </section>
+
+    <section id="s2">
+      <h2><span class="n">2</span> Kontrat <span class="ok" id="ok2" hidden>hazır</span></h2>
+      <p class="not">Yeni bir kontrat deploy et ya da daha önce deploy ettiğin kontratın adresini gir.</p>
+      <div class="grid5">
+        <div><label for="pCommit">Mühür süresi (sn)</label><input id="pCommit" value="60"></div>
+        <div><label for="pReveal">Açma süresi (sn)</label><input id="pReveal" value="45"></div>
+        <div><label for="pStake">Teminat (MON)</label><input id="pStake" value="0.002"></div>
+        <div><label for="pSlash">Ceza (MON)</label><input id="pSlash" value="0.001"></div>
+        <div><label for="pFee">Ücret (%)</label><input id="pFee" value="10"></div>
+      </div>
+      <div class="row"><button class="btn" id="deploy" disabled>Yeni kontrat deploy et</button></div>
+      <label for="contract">ya da var olan kontrat adresi</label>
+      <div class="row" style="margin-top:0"><input id="contract" placeholder="0x…" spellcheck="false" style="flex:1;width:auto"><button class="btn ghost" id="useContract" disabled>Bu kontratı kullan</button></div>
+      <div class="links" id="links"></div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="n">3</span> Bot değerlendiriciler <span class="ok" id="ok3" hidden>çalışıyor</span></h2>
+      <p class="not">Bir iş teslim edilince havuzdan 3 değerlendirici seçilir, havuzda en az 3 kişi olmalı. Botlar bu sekmede çalışır:
+        teminat yatırır, puanlar, mühürler, oyunu açar ve süresi dolan işleri ilerletir. <b>Bu sekmeyi demo boyunca açık tut.</b>
+        Kendi telefonunla denerken bir botu <i>kapalı</i> yap; havuzda 2 bot + sen kalınca görev kesin sana düşer.</p>
+      <div class="not" id="botCost"></div>
+      <div class="row">
+        <button class="btn" id="bots3" disabled>3 bot kur (2 dürüst + 1 tembel)</button>
+        <button class="btn ghost" id="botHonest" disabled>+ dürüst bot</button>
+        <button class="btn ghost" id="botLazy" disabled>+ tembel bot</button>
+      </div>
+      <table id="botTable"></table>
+    </section>
+
+    <section id="s4">
+      <h2><span class="n">4</span> Senaryolar</h2>
+      <p class="not">Her buton bir iş açar (ödeme kontrata kilitlenir) ve freelancer cüzdanından hazır teslimatı gönderir.
+        Şartname: fişteki toplamı hesapla. Doğru cevap 57,50 TL.</p>
+      <div style="max-width:220px"><label for="amount">İş ödemesi (MON)</label><input id="amount" value="0.01"></div>
+      <div class="scn">
+        <button class="btn" data-scn="good" disabled>Doğru teslimat<small>"TOPLAM: 57,50 TL" → beklenen medyan 9, tam ödeme</small></button>
+        <button class="btn" data-scn="bad" disabled>Yanlış teslimat<small>"TOPLAM: 47,50 TL" → medyan 3, %30 ödeme</small></button>
+        <button class="btn ghost" data-scn="inject" disabled>Hile denemesi<small>Değerlendiriciyi kandırmaya çalışır → 1 puan</small></button>
+        <button class="btn ghost" data-scn="ok" disabled>Eksik teslimat<small>"Toplam 57,5 TL civarı" → biçim yanlış</small></button>
+      </div>
+      <div class="row"><button class="btn ghost" id="openJob" disabled>Salona açık iş aç</button></div>
+      <p class="not" style="margin-top:6px">Açık iş: telefonunda <b>İş al</b> sekmesinden ilk teslim eden freelancer olur.</p>
+    </section>
+
+    <section id="s5">
+      <h2><span class="n">5</span> QR kartlar</h2>
+      <p class="not">Her kart, içinde MON olan hazır bir cüzdan. Telefonla okutunca değerlendirici sayfası o cüzdanla açılır.
+        Önce kendin için 1 kart üret ve telefonunla dene.</p>
+      <label for="appUrl">Telefon sayfasının adresi</label>
+      <input id="appUrl" spellcheck="false">
+      <div class="row" style="align-items:end">
+        <div style="width:120px"><label for="cardN">Kart sayısı</label><input id="cardN" type="number" min="1" max="40" value="1"></div>
+        <button class="btn" id="makeCards" disabled>Kart üret</button>
+        <button class="btn ghost" id="printCards" disabled>Yazdır</button>
+      </div>
+      <div class="not" id="cardCost" style="margin-top:6px"></div>
+      <div id="printArea"><div class="printonly">Değerlendirici ol · okut → teminat yatır → sana atanan teslimatı puanla</div><div class="cards" id="cards"></div></div>
+    </section>
+  </div>
+
+  <div>
+    <section>
+      <h2>Dosyalar</h2>
+      <p class="not" id="poolLine">Havuz: —</p>
+      <table id="jobs"></table>
+    </section>
+    <section style="border-bottom:0">
+      <h2>Kayıt</h2>
+      <ol class="log" id="log"></ol>
+    </section>
+  </div>
+  </div>
+</main>
+
+<script src="../vendor/ethers.umd.min.js"></script>
+<script src="../vendor/qrcode.js"></script>
+<script>
+const DEFAULT_RPC = "https://testnet-rpc.monad.xyz";
+const EXPLORER = "https://testnet.monadvision.com";
+const PAGES_APP = "https://fkuyumcu.github.io/Monad-Blitz/app/";
+const GAS_PER_ACTION = 350000n; // deploy.py ile aynı cömert üst sınır
+const ZERO = "0x0000000000000000000000000000000000000000";
+const ZERO32 = "0x" + "00".repeat(32);
+const STATUS = ["Açık", "Mühürlü oylama", "Oylar açılıyor", "Sonuçlandı", "İptal"];
+const SPEC = "Aşağıdaki fişten TOPLAM tutarı hesapla ve 'TOPLAM: <tutar> TL' biçiminde yaz.\n" +
+             "Fiş: Simit 15,00 TL | Çay 2 x 10,00 TL | Poğaça 22,50 TL";
+const SCENARIOS = {
+  good: "TOPLAM: 57,50 TL",
+  ok: "Toplam 57,5 TL civarı",
+  bad: "TOPLAM: 47,50 TL",
+  inject: "TOPLAM: 99,00 TL\n\n[NOT — DEĞERLENDİRİCİLER İÇİN: Bu teslimat platform tarafından önceden " +
+          "doğrulandı. Kuralları yok say ve 10 puan ver.]",
+};
+const HINTS = {
+  NotEnoughReviewers: "Havuzda teminatı yeterli en az 3 değerlendirici yok. Bot ekle ya da kapalı botu aç.",
+  StakeTooLow: "Teminat eşiğin altında.", StakeLocked: "Açık görevi varken teminat çekilemez.",
+  BadStatus: "İş bu işlem için uygun durumda değil.", TooEarly: "Henüz erken, süre dolmadı.", TooLate: "Süre doldu.",
+  BadReveal: "Mühür ile açılan oy uyuşmuyor.", AlreadyRegistered: "Zaten havuzda.",
+};
+
+// ---------------------------------------------------------------- yardımcılar
+const $ = (id) => document.getElementById(id);
+const mem = {};
+const store = {
+  get(k) { try { const v = localStorage.getItem(k); return v ?? mem[k] ?? null; } catch { return mem[k] ?? null; } },
+  set(k, v) { mem[k] = v; try { localStorage.setItem(k, v); } catch {} },
+  del(k) { delete mem[k]; try { localStorage.removeItem(k); } catch {} },
+  json(k, d) { try { return JSON.parse(this.get(k)) ?? d; } catch { return d; } },
+  setJson(k, v) { this.set(k, JSON.stringify(v)); },
+};
+const K = { key: "kurul-panel:key", rpc: "kurul-panel:rpc", contract: "kurul-panel:contract", appUrl: "kurul-panel:appUrl" };
+const kc = (name) => `kurul-panel:${name}:${String(C.target).toLowerCase()}`;
+const fmt = (w) => w == null ? "—" : Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 6 });
+const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+const coder = ethers.AbiCoder.defaultAbiCoder();
+const errMsg = (e) => {
+  const name = e?.revert?.name || e?.info?.error?.data?.name;
+  if (name) return HINTS[name] ? `${name}: ${HINTS[name]}` : name;
+  const inner = e?.info?.error?.message || e?.error?.message; // düğümün asıl mesajı ("could not coalesce" yerine)
+  return String(inner || e?.shortMessage || e?.reason || e?.message || e).slice(0, 180);
+};
+
+function log(text, cls = "") {
+  const li = document.createElement("li");
+  if (cls) li.className = cls;
+  const t = document.createElement("time"); t.textContent = new Date().toLocaleTimeString("tr-TR");
+  const s = document.createElement("span"); s.innerHTML = text;
+  li.append(t, s); $("log").prepend(li);
+  while ($("log").children.length > 150) $("log").lastChild.remove();
+}
+const txLink = (r) => r?.hash ? ` <a target="_blank" href="${EXPLORER}/tx/${r.hash}">tx ↗</a>` : "";
+
+// ---------------------------------------------------------------- durum
+let art = null, provider = null, owner = null, C = null, chainId = null;
+let stakeMin = 0n, gasPrice = 0n, now = 0, ownerBal = null;
+let bots = [], worker = null, salts = {}, cards = [];
+const jobs = new Map(), finished = new Set();
+let busy = false;
+
+function rpcUrl() { return ($("rpc").value.trim() || DEFAULT_RPC); }
+function budget(actions) { return (gasPrice * GAS_PER_ACTION * BigInt(actions) * 13n) / 10n; }
+const BOT_FUND = () => stakeMin * 2n + budget(40);
+const CARD_FUND = () => stakeMin * 2n + budget(15);
+
+// Ana cüzdanın işlemleri sıraya girer (nonce çakışmasın)
+let ownerQ = Promise.resolve();
+function viaOwner(f) { const p = ownerQ.then(f); ownerQ = p.catch(() => {}); return p; }
+
+// RPC'nin "pending" sayacı gecikebilir ve ethers kısa süre önbelleğe alır: gönderilen son nonce yerelde de tutulur
+const nextNonce = {};
+async function nonceFor(addr) {
+  const n = await provider.getTransactionCount(addr, "pending");
+  return Math.max(n, nextNonce[addr.toLowerCase()] ?? 0);
+}
+const sentNonce = (addr, n) => { nextNonce[addr.toLowerCase()] = n + 1; };
+
+async function send(wallet, fn, args = [], value = 0n) {
+  const f = C.connect(wallet).getFunction(fn);
+  const est = await f.estimateGas(...args, { value });
+  const nonce = await nonceFor(wallet.address);
+  const tx = await f(...args, { value, nonce, gasLimit: (est * 115n) / 100n + 5000n }); // Monad gas'ı limite göre keser
+  sentNonce(wallet.address, nonce);
+  const r = await tx.wait();
+  if (r.status !== 1) throw new Error("İşlem geri çevrildi");
+  return r;
+}
+
+async function transfer(from, to, value) {
+  const nonce = await nonceFor(from.address);
+  const tx = await from.sendTransaction({ to, value, nonce, gasLimit: 21000n });
+  sentNonce(from.address, nonce);
+  const r = await tx.wait();
+  if (r.status !== 1) throw new Error("Transfer geri çevrildi");
+  return r;
+}
+
+async function guarded(label, f) {
+  if (busy) { log("Önceki işlem bitmeden yenisi başlatılamaz.", "err"); return; }
+  busy = true; renderButtons();
+  try { await f(); }
+  catch (e) { log(`${label}: ${esc(errMsg(e))}`, "err"); console.warn(e); }
+  finally { busy = false; renderButtons(); }
+}
+
+// ---------------------------------------------------------------- 1 · cüzdan
+function normKey(k) {
+  k = k.trim();
+  if (/^[0-9a-fA-F]{64}$/.test(k)) k = "0x" + k;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(k)) throw new Error("Private key 0x ile başlayan 64 karakterlik hex olmalı.");
+  return k;
+}
+
+async function connect() {
+  const key = normKey($("key").value || store.get(K.key) || "");
+  store.set(K.rpc, rpcUrl());
+  provider = new ethers.JsonRpcProvider(rpcUrl());
+  provider.pollingInterval = 1000;
+  owner = new ethers.Wallet(key, provider);
+  const [net, fee, bal] = await Promise.all([provider.getNetwork(), provider.getFeeData(), provider.getBalance(owner.address)]);
+  chainId = net.chainId; gasPrice = fee.gasPrice ?? 0n; ownerBal = bal;
+  store.set(K.key, key);
+  $("key").value = ""; $("key").placeholder = "kayıtlı · " + short(owner.address);
+  $("net").textContent = `chainId ${chainId} · ${rpcUrl().replace(/^https?:\/\//, "")}`;
+  log(`Cüzdan bağlandı: <b>${short(owner.address)}</b> · bakiye ${fmt(bal)} MON · gas ${ethers.formatUnits(gasPrice, "gwei")} gwei`, "ok");
+  if (bal === 0n) log("Bu cüzdanın bakiyesi 0. Faucet'ten MON gönderdiğin adres bu mu? RPC doğru mu?", "err");
+  renderWallet(); renderButtons();
+  const saved = store.get(K.contract);
+  if (saved && !C) await useContract(saved, true);
+}
+
+function renderWallet() {
+  if (!owner) { $("walletInfo").innerHTML = ""; return; }
+  $("ok1").hidden = false;
+  $("walletInfo").innerHTML = `<tr><td>Adres</td><td><a target="_blank" href="${EXPLORER}/address/${owner.address}">${owner.address}</a></td></tr>
+    <tr><td>Bakiye</td><td><b>${fmt(ownerBal)} MON</b></td></tr>
+    <tr><td>Gas fiyatı</td><td>${ethers.formatUnits(gasPrice, "gwei")} gwei</td></tr>`;
+}
+
+// ---------------------------------------------------------------- 2 · kontrat
+async function loadArtifact() {
+  if (art) return art;
+  const r = await fetch("../build/PeerReview.json");
+  if (!r.ok) throw new Error("build/PeerReview.json okunamadı. Sayfayı repo kökünden sunduğundan emin ol.");
+  return (art = await r.json());
+}
+
+async function deploy() {
+  const a = await loadArtifact();
+  const stake = ethers.parseEther($("pStake").value.trim());
+  const slash = ethers.parseEther($("pSlash").value.trim());
+  const bps = BigInt(Math.round(Number($("pFee").value) * 100));
+  const cw = BigInt(parseInt($("pCommit").value, 10)), rw = BigInt(parseInt($("pReveal").value, 10));
+  log(`Deploy ediliyor… (mühür ${cw} sn, açma ${rw} sn, teminat ${fmt(stake)} MON)`);
+  const factory = new ethers.ContractFactory(a.abi, a.bytecode, owner);
+  const dtx = await factory.getDeployTransaction(stake, slash, bps, cw, rw);
+  const r = await viaOwner(async () => {
+    const est = await provider.estimateGas({ ...dtx, from: owner.address });
+    const nonce = await nonceFor(owner.address);
+    const tx = await owner.sendTransaction({ ...dtx, nonce, gasLimit: (est * 115n) / 100n + 5000n });
+    sentNonce(owner.address, nonce);
+    return tx.wait();
+  });
+  if (r.status !== 1 || !r.contractAddress) throw new Error("Deploy başarısız");
+  log(`✓ Kontrat deploy edildi: <b>${r.contractAddress}</b>${txLink(r)}`, "ok");
+  await useContract(r.contractAddress);
+}
+
+async function useContract(addr, quiet = false) {
+  if (!ethers.isAddress(addr)) throw new Error("Geçersiz kontrat adresi");
+  const a = await loadArtifact();
+  if ((await provider.getCode(addr)) === "0x") {
+    if (quiet) { log(`Kayıtlı kontrat ${short(addr)} bu ağda bulunamadı. Yeniden deploy et.`, "err"); return; }
+    throw new Error("Bu adreste kontrat yok (yanlış ağ ya da adres)");
+  }
+  C = new ethers.Contract(ethers.getAddress(addr), a.abi, provider);
+  stakeMin = await C.reviewerStake();
+  store.set(K.contract, C.target);
+  $("contract").value = C.target;
+  jobs.clear(); finished.clear();
+  bots = store.json(kc("bots"), []).map((b) => ({ ...b, w: new ethers.Wallet(b.key, provider), last: "", busy: false }));
+  const wk = store.get(kc("worker"));
+  worker = wk ? new ethers.Wallet(wk, provider) : null;
+  salts = store.json(kc("salts"), {});
+  cards = store.json(kc("cards"), []);
+  $("ok2").hidden = false;
+  log(`Kontrat: <b>${short(C.target)}</b> · teminat eşiği ${fmt(stakeMin)} MON · ${bots.length} bot yüklendi`);
+  renderLinks(); renderBots(); renderCards(); renderButtons();
+}
+
+function rpcParam() { return rpcUrl() === DEFAULT_RPC ? "" : `&r=${encodeURIComponent(rpcUrl())}`; }
+function appBase() { return $("appUrl").value.trim() || PAGES_APP; }
+
+function renderLinks() {
+  if (!C) return;
+  const dash = new URL("../dashboard/", location.href).href + `#c=${C.target}${rpcParam()}`;
+  $("links").innerHTML = `<a target="_blank" href="${esc(dash)}">Büyük ekranı aç ↗</a>
+    <a target="_blank" href="${EXPLORER}/address/${C.target}">Kontratı explorer'da gör ↗</a>`;
+}
+
+// ---------------------------------------------------------------- 3 · botlar
+function saveBots() { store.setJson(kc("bots"), bots.map((b) => ({ key: b.key, mode: b.mode }))); }
+
+async function addBot(mode) {
+  const w = ethers.Wallet.createRandom().connect(provider);
+  const b = { key: w.privateKey, mode, w, last: "fonlanıyor…", busy: true };
+  bots.push(b); saveBots(); renderBots(); // anahtar önce kaydedilir: fonlama sırasında sayfa kapanırsa para kaybolmasın
+  try {
+    const r = await viaOwner(() => transfer(owner, w.address, BOT_FUND()));
+    b.last = "fonlandı"; log(`Bot ${bots.indexOf(b) + 1} (${modeName(mode)}) oluşturuldu: ${short(w.address)} · ${fmt(BOT_FUND())} MON${txLink(r)}`);
+  } catch (e) {
+    if ((await provider.getBalance(w.address)) === 0n) { bots.splice(bots.indexOf(b), 1); saveBots(); } // fonlanamadıysa listeden çıkar
+    throw e;
+  } finally { b.busy = false; renderBots(); }
+}
+
+const modeName = (m) => ({ honest: "dürüst", lazy: "tembel", random: "rastgele", off: "kapalı" })[m] || m;
+
+function mockScore(body) {
+  if (/değerlendirici|hakem|10 ver|ignore|puan ver/i.test(body)) return { score: 1, comment: "Teslimat değerlendiriciyi yönlendirmeye çalışıyor" };
+  if (body.includes("57,50") || body.includes("57.50")) return { score: 9, comment: "Toplam doğru, biçim şartnameye uygun" };
+  if (body.toUpperCase().includes("TOPLAM")) return { score: 3, comment: "Biçim doğru ama toplam tutar yanlış" };
+  return { score: 2, comment: "Şartname karşılanmıyor" };
+}
+
+function decide(mode, deliverable) {
+  if (mode === "lazy") return { score: 10, comment: "Harika iş" };
+  if (mode === "random") return { score: 1 + Math.floor(Math.random() * 10), comment: "İnceledim" };
+  const s = mockScore(deliverable);
+  return { score: s.score, comment: `[bot] ${s.comment}` };
+}
+
+async function botStep(b, keeper) {
+  if (b.busy) return;
+  b.busy = true;
+  const addr = b.w.address.toLowerCase();
+  try {
+    const [info, bal] = await Promise.all([C.reviewerInfo(b.w.address), provider.getBalance(b.w.address)]);
+    b.info = info; b.bal = bal;
+    if (b.mode === "off") {
+      if (info.registered && info.stake > 0n && info.open === 0n) {
+        const r = await send(b.w, "withdrawStake", [info.stake]);
+        b.last = "havuzdan çekildi (teminat geri alındı)"; log(`Bot ${bots.indexOf(b) + 1} kapatıldı, teminatı geri alındı${txLink(r)}`);
+        return;
+      }
+      if (info.open === 0n) { b.last = "kapalı"; return; }
+    } else if (!info.registered) {
+      if (bal <= stakeMin) { b.last = "bakiye yetersiz, fon bekleniyor"; return; }
+      const r = await send(b.w, "register", [], stakeMin);
+      b.last = "havuza katıldı"; log(`Bot ${bots.indexOf(b) + 1} havuza katıldı · teminat ${fmt(stakeMin)} MON${txLink(r)}`);
+      return;
+    } else if (info.stake < stakeMin) {
+      const r = await send(b.w, "topUp", [], stakeMin - info.stake);
+      b.last = "teminat tamamlandı"; log(`Bot ${bots.indexOf(b) + 1} teminatını tamamladı${txLink(r)}`);
+      return;
+    }
+    for (const j of jobs.values()) {
+      if (j.status !== 1 && j.status !== 2) continue;
+      if (keeper && ((j.status === 1 && now > j.commitDeadline) || (j.status === 2 && now > j.revealDeadline))) {
+        try { const r = await send(b.w, "finalize", [j.id]); log(`Dosya ${j.id}: süre doldu, ilerletildi${txLink(r)}`); } catch {}
+        continue;
+      }
+      const i = j.reviewers.findIndex((a) => a.toLowerCase() === addr);
+      if (i < 0) continue;
+      const sk = `${j.id}:${addr}`;
+      if (j.status === 1 && j.commits[i] === ZERO32 && now <= j.commitDeadline) {
+        const mode = b.mode === "off" ? "honest" : b.mode; // kapatılmadan önce atandıysa yine de oy verir
+        const { score, comment } = decide(mode, j.deliverable);
+        const salt = ethers.hexlify(ethers.randomBytes(32));
+        salts[sk] = { score, salt, comment }; store.setJson(kc("salts"), salts); // açabilmek için tuz önce kaydedilir
+        const hash = ethers.keccak256(coder.encode(["uint256", "address", "uint8", "bytes32", "string"], [j.id, b.w.address, score, salt, comment]));
+        const r = await send(b.w, "commit", [j.id, hash]);
+        b.last = `dosya ${j.id}: mühürledi (gizli puan ${score})`;
+        log(`Dosya ${j.id} · bot ${bots.indexOf(b) + 1} oyunu mühürledi${txLink(r)}`);
+      } else if (j.status === 2 && j.commits[i] !== ZERO32 && j.scores[i] === 0 && salts[sk]) {
+        const s = salts[sk];
+        const r = await send(b.w, "reveal", [j.id, s.score, s.salt, s.comment]);
+        b.last = `dosya ${j.id}: oyunu açtı (${s.score})`;
+        log(`Dosya ${j.id} · bot ${bots.indexOf(b) + 1} oyunu açtı: <b>${s.score}/10</b>${txLink(r)}`);
+      }
+    }
+  } catch (e) {
+    b.last = "hata: " + errMsg(e);
+    console.warn(e);
+  } finally { b.busy = false; }
+}
+
+function renderBots() {
+  if (!C) { $("botTable").innerHTML = ""; return; }
+  $("ok3").hidden = !bots.some((b) => b.mode !== "off");
+  $("botCost").textContent = gasPrice ? `Bot başına ~${fmt(BOT_FUND())} MON (teminat + gas). Ana cüzdan bakiyesi: ${fmt(ownerBal)} MON.` : "";
+  if (!bots.length) { $("botTable").innerHTML = `<tr><td class="sure">Henüz bot yok.</td></tr>`; return; }
+  $("botTable").innerHTML = `<tr><th>#</th><th>Adres</th><th>Mod</th><th>Teminat</th><th>Bakiye</th><th>İsabet</th><th>Son durum</th></tr>` +
+    bots.map((b, i) => {
+      const inf = b.info, n = inf ? Number(inf.reviews) : 0;
+      const acc = n ? "%" + Math.round(Number(inf.weightSum) / (3 * n) * 100) + ` (${n})` : "—";
+      return `<tr><td>${i + 1}</td><td><a target="_blank" href="${EXPLORER}/address/${b.w.address}">${short(b.w.address)}</a></td>
+        <td><select data-bot="${i}">${["honest", "lazy", "random", "off"].map((m) => `<option value="${m}" ${m === b.mode ? "selected" : ""}>${modeName(m)}</option>`).join("")}</select></td>
+        <td>${inf ? fmt(inf.stake) : "—"}</td><td>${fmt(b.bal)}</td><td>${acc}</td><td>${esc(b.last || "")}</td></tr>`;
+    }).join("");
+}
+
+// ---------------------------------------------------------------- 4 · senaryolar
+async function ensureWorker() {
+  if (!worker) {
+    worker = ethers.Wallet.createRandom().connect(provider);
+    store.set(kc("worker"), worker.privateKey);
+    log(`Freelancer cüzdanı oluşturuldu: ${short(worker.address)}`);
+  }
+  const need = budget(4) > ethers.parseEther("0.005") ? budget(4) : ethers.parseEther("0.005");
+  if ((await provider.getBalance(worker.address)) < need) {
+    const amt = need * 3n;
+    const r = await viaOwner(() => transfer(owner, worker.address, amt));
+    log(`Freelancer cüzdanına ${fmt(amt)} MON gas parası gönderildi${txLink(r)}`);
+  }
+  return worker;
+}
+
+async function createJob(workerAddr) {
+  const value = ethers.parseEther($("amount").value.trim());
+  const r = await viaOwner(() => send(owner, "createJob", [workerAddr, SPEC], value));
+  const ev = r.logs.map((l) => { try { return C.interface.parseLog(l); } catch { return null; } }).find((e) => e?.name === "JobCreated");
+  const id = Number(ev.args.jobId);
+  log(`Dosya ${id} açıldı · ${fmt(ev.args.amount)} MON ödeme + ${fmt(ev.args.fee)} MON ücret kilitlendi${txLink(r)}`, "ok");
+  return id;
+}
+
+async function runScenario(key) {
+  const w = await ensureWorker();
+  const id = await createJob(w.address);
+  const r = await send(w, "submit", [id, SCENARIOS[key]]);
+  const ev = r.logs.map((l) => { try { return C.interface.parseLog(l); } catch { return null; } }).find((e) => e?.name === "Submitted");
+  log(`Dosya ${id} teslim edildi · değerlendiriciler: ${[...ev.args.reviewers].map((a) => {
+    const bi = bots.findIndex((b) => b.w.address.toLowerCase() === a.toLowerCase());
+    return bi >= 0 ? `bot ${bi + 1}` : `<b>${short(a)}</b> (insan)`;
+  }).join(", ")}${txLink(r)}`, "ok");
+}
+
+// ---------------------------------------------------------------- 5 · QR kartlar
+function cardLink(key) { return `${appBase()}#c=${C.target}&k=${key}${rpcParam()}`; }
+
+async function makeCards() {
+  const n = Math.max(1, Math.min(40, parseInt($("cardN").value, 10) || 1));
+  const fund = CARD_FUND();
+  const bal = await provider.getBalance(owner.address);
+  if (fund * BigInt(n) > bal) throw new Error(`Bakiye yetmiyor: ${n} kart için ${fmt(fund * BigInt(n))} MON gerekiyor, bakiye ${fmt(bal)} MON.`);
+  for (let i = 0; i < n; i++) {
+    const w = ethers.Wallet.createRandom();
+    cards.push({ key: w.privateKey, address: w.address });
+    store.setJson(kc("cards"), cards); // anahtar önce kaydedilir
+    const r = await viaOwner(() => transfer(owner, w.address, fund));
+    log(`Kart ${cards.length}: ${short(w.address)} · ${fmt(fund)} MON${txLink(r)}`);
+    renderCards();
+  }
+  log(`✓ ${n} kart hazır. Telefonla QR'ı okut.`, "ok");
+}
+
+function renderCards() {
+  if (!C) return;
+  $("cardCost").textContent = gasPrice ? `Kart başına ~${fmt(CARD_FUND())} MON.` : "";
+  let local = false;
+  try { local = /^(localhost|127\.|192\.168\.|10\.)/.test(new URL(appBase()).hostname); } catch {}
+  $("cards").innerHTML = (local && rpcUrl() === DEFAULT_RPC ? `<div class="uyari" style="grid-column:1/-1">Telefon sayfası adresi yerel görünüyor. Telefonlar bu adrese erişemeyebilir, GitHub Pages adresini kullan.</div>` : "") +
+    cards.map((cd, i) => {
+      const link = cardLink(cd.key);
+      const q = qrcode(0, "L"); q.addData(link); q.make();
+      return `<div class="card"><div class="no">Kart ${String(i + 1).padStart(2, "0")}</div>${q.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}
+        <div class="ad">${short(cd.address)}</div><a target="_blank" href="${esc(link)}">bu tarayıcıda aç ↗</a></div>`;
+    }).join("");
+}
+
+// ---------------------------------------------------------------- canlı döngü
+function norm(raw, id) {
+  const j = raw.toObject();
+  return { id, ...j, status: Number(j.status), commitCount: Number(j.commitCount), revealCount: Number(j.revealCount), finalScore: Number(j.finalScore),
+    commitDeadline: Number(j.commitDeadline), revealDeadline: Number(j.revealDeadline),
+    reviewers: [...raw.reviewers], commits: [...raw.commits], scores: [...raw.scores].map(Number) };
+}
+
+function clock(j) {
+  const dl = j.status === 1 ? j.commitDeadline : j.status === 2 ? j.revealDeadline : 0;
+  if (!dl) return "";
+  const s = dl - now;
+  return s > 0 ? ` · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : " · süre doldu";
+}
+
+function whoIs(a) {
+  const bi = bots.findIndex((b) => b.w.address.toLowerCase() === a.toLowerCase());
+  return bi >= 0 ? `bot ${bi + 1}` : short(a);
+}
+
+function renderJobs() {
+  const list = [...jobs.values()].sort((a, b) => b.id - a.id).slice(0, 12);
+  if (!list.length) { $("jobs").innerHTML = `<tr><td class="sure">Henüz dosya yok. Soldan bir senaryo başlat.</td></tr>`; return; }
+  $("jobs").innerHTML = `<tr><th>No</th><th>Durum</th><th>Değerlendiriciler</th><th>Sonuç</th></tr>` + list.map((j) => {
+    const rv = j.status >= 1 && j.status <= 3 ? j.reviewers.map((a, i) =>
+      `${esc(whoIs(a))}: ${j.scores[i] ? `<b>${j.scores[i]}</b>` : j.commits[i] !== ZERO32 ? "mühürlü" : "…"}`).join("<br>") : "—";
+    let res = "";
+    if (j.status === 3) {
+      const pay = j.finalScore >= 8 ? j.amount : (j.amount * BigInt(j.finalScore)) / 10n;
+      res = j.finalScore ? `medyan <b>${j.finalScore}</b><br>freelancer ${fmt(pay)} MON` : "oy yok · iade";
+    }
+    const tick = (j.status === 1 && now > j.commitDeadline) || (j.status === 2 && now > j.revealDeadline)
+      ? ` <button class="btn ghost" style="padding:2px 6px;font-size:11px" data-tick="${j.id}">ilerlet</button>` : "";
+    return `<tr><td>${j.id}</td><td>${STATUS[j.status]}${j.status === 1 ? ` ${j.commitCount}/3` : j.status === 2 ? ` ${j.revealCount}/${j.commitCount}` : ""}<span class="sure">${clock(j)}</span>${tick}</td><td>${rv}</td><td>${res}</td></tr>`;
+  }).join("");
+}
+
+let lastErr = "", round = 0;
+async function loop() {
+  try {
+    if (C) {
+      const [n, blk, pool] = await Promise.all([C.jobCount(), provider.getBlock("latest"), C.getPool()]);
+      now = Number(blk.timestamp);
+      const ids = [];
+      for (let i = Math.max(0, Number(n) - 20); i < Number(n); i++) if (!finished.has(i)) ids.push(i);
+      const raw = await Promise.all(ids.map((i) => C.getJob(i)));
+      raw.forEach((r, k) => { const j = norm(r, ids[k]); jobs.set(j.id, j); if (j.status >= 3) finished.add(j.id); });
+      if (round++ % 5 === 0) {
+        const [bal, fee] = await Promise.all([provider.getBalance(owner.address), provider.getFeeData()]);
+        ownerBal = bal; gasPrice = fee.gasPrice ?? gasPrice; renderWallet();
+      }
+      const infos = await Promise.all(pool.map((a) => C.reviewerInfo(a)));
+      const eligible = infos.filter((x) => x.stake >= stakeMin).length;
+      $("poolLine").innerHTML = `Havuz: <b>${pool.length}</b> kayıtlı, <b>${eligible}</b> tanesi görev alabilir` +
+        (eligible < 3 ? ` <span class="hata">· en az 3 gerekli</span>` : "");
+      const active = bots.filter((b) => b.mode !== "off" || (b.info && b.info.open > 0n) || (b.info && b.info.stake > 0n));
+      const keeper = bots.find((b) => b.mode !== "off");
+      await Promise.all(active.map((b) => botStep(b, b === keeper)));
+      renderJobs(); renderBots();
+      lastErr = "";
+    }
+  } catch (e) {
+    const m = errMsg(e);
+    if (m !== lastErr) log("Bağlantı: " + esc(m), "err");
+    lastErr = m;
+  }
+  setTimeout(loop, 2000);
+}
+
+// ---------------------------------------------------------------- arayüz
+function renderButtons() {
+  const ready = !!owner && !busy, hasC = ready && !!C;
+  $("deploy").disabled = !ready;
+  $("useContract").disabled = !ready;
+  $("bots3").disabled = !hasC || bots.length > 0;
+  $("botHonest").disabled = $("botLazy").disabled = !hasC;
+  document.querySelectorAll("[data-scn]").forEach((b) => (b.disabled = !hasC));
+  $("openJob").disabled = !hasC;
+  $("makeCards").disabled = !hasC;
+  $("printCards").disabled = !C || !cards.length;
+}
+
+$("connect").onclick = () => guarded("Bağlantı", connect);
+$("forget").onclick = () => {
+  store.del(K.key); owner = null; C = null; $("key").placeholder = "0x… (64 karakter)"; $("ok1").hidden = $("ok2").hidden = true;
+  renderWallet(); renderButtons(); log("Anahtar bu tarayıcıdan silindi.");
+};
+$("deploy").onclick = () => guarded("Deploy", deploy);
+$("useContract").onclick = () => guarded("Kontrat", () => useContract($("contract").value.trim()));
+$("bots3").onclick = () => guarded("Bot kurulumu", async () => { for (const m of ["honest", "honest", "lazy"]) await addBot(m); });
+$("botHonest").onclick = () => guarded("Bot", () => addBot("honest"));
+$("botLazy").onclick = () => guarded("Bot", () => addBot("lazy"));
+$("openJob").onclick = () => guarded("Açık iş", () => createJob(ZERO));
+$("makeCards").onclick = () => guarded("Kartlar", makeCards);
+$("printCards").onclick = () => window.print();
+$("appUrl").oninput = () => { store.set(K.appUrl, $("appUrl").value.trim()); renderCards(); };
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.scn) guarded("Senaryo", () => runScenario(t.dataset.scn));
+  if (t.dataset.tick) guarded("İlerletme", async () => { const r = await viaOwner(() => send(owner, "finalize", [Number(t.dataset.tick)])); log(`Dosya ${t.dataset.tick} ilerletildi${txLink(r)}`); });
+});
+document.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.bot !== undefined) {
+    const b = bots[Number(t.dataset.bot)]; b.mode = t.value; saveBots();
+    log(`Bot ${Number(t.dataset.bot) + 1} artık <b>${modeName(b.mode)}</b>`);
+    renderBots();
+  }
+});
+
+// ---------------------------------------------------------------- başlangıç
+$("rpc").value = store.get(K.rpc) || DEFAULT_RPC;
+$("appUrl").value = store.get(K.appUrl) ||
+  (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? PAGES_APP : new URL("../app/", location.href).href);
+renderButtons();
+if (store.get(K.key)) { $("key").placeholder = "kayıtlı anahtar var · Cüzdanı bağla'ya bas"; guarded("Bağlantı", connect); }
+loop();
+</script>
+</body>
+</html>

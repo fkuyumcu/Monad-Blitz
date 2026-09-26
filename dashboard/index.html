@@ -134,9 +134,17 @@
 </main>
 
 <script src="../vendor/ethers.umd.min.js"></script>
-<script src="config.js"></script>
+<script src="config.js" onerror="window.PR_CONFIG = window.PR_CONFIG || {}"></script>
 <script>
-const CFG = window.PR_CONFIG;
+// ayarlar: URL'nin # kısmı > config.js
+const hp = new URLSearchParams(location.hash.slice(1));
+const CFG = Object.assign({ rpc: "https://testnet-rpc.monad.xyz", explorer: "https://testnet.monadvision.com" }, window.PR_CONFIG || {});
+if (hp.get("c")) CFG.contract = hp.get("c");
+if (hp.get("r")) CFG.rpc = hp.get("r");
+if (!CFG.contract) {
+  document.getElementById("err").textContent = "Kontrat adresi yok. Büyük ekranı kontrol panelindeki linkten aç.";
+  throw new Error("kontrat adresi yok");
+}
 const ABI = [
   "function jobCount() view returns (uint256)",
   "function getJob(uint256) view returns (tuple(address client,address worker,uint256 amount,uint256 fee,uint8 status,uint8 commitCount,uint8 revealCount,uint8 finalScore,uint64 commitDeadline,uint64 revealDeadline,address[3] reviewers,bytes32[3] commits,uint8[3] scores,string spec,string deliverable))",

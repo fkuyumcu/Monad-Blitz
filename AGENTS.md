@@ -35,7 +35,9 @@ reviewer_bot.py            otomatik değerlendirici + süresi dolan işleri iler
 demo.py                    setup / post / run / submit / status / tick / pool
 app/index.html             telefon sayfası (değerlendirici + freelancer), tarayıcıda burner cüzdan
 dashboard/index.html       büyük ekran
+panel/index.html           kontrol paneli: deploy, tarayıcı içi botlar, senaryolar, QR kartlar (terminalsiz demo)
 vendor/ethers.umd.min.js   ethers v6
+vendor/qrcode.js           qrcode-generator 1.4.4 (MIT)
 ```
 
 ## Kesin kurallar
