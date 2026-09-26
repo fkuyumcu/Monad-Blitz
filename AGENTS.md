@@ -3,12 +3,14 @@
 Bu dosyayı ilk sen oku. Sonra sırasıyla `docs/handoff/` altındaki dosyalara geç.
 
 ## Proje tek cümlede
-**AI hakemli emanet (escrow):** iş veren parayı akıllı kontrata kilitler, iş yapan teslimatı gönderir,
-birbirinden bağımsız 3 AI hakem teslimatı şartnameye göre değerlendirip oyunu kendi cüzdanıyla zincire yazar.
-2/3 çoğunluk parayı ya iş yapana gönderir ya da iş verene iade eder. Çoğunluğa ters oy veren hakemin teminatı kesilir.
+**Kurul — merkeziyetsiz freelance değerlendirme:** İş veren ödemeyi kontrata kilitler, freelancer teslim eder.
+Teminat yatırmış havuzdan rastgele 3 değerlendirici, birbirini görmeden (commit-reveal) 1–10 puan ve yorum verir.
+Nihai puan medyandır. Freelancer puana göre ödeme alır. Değerlendiriciler medyana yakınlıklarına göre ücret paylaşır,
+3 puan ya da daha fazla sapan ceza yer. Kayıtlar zincirde; kontratın sahibi yok ve kontrat güncellenemez.
 
-Bağlam: Monad Blitz İstanbul (26 Eylül 2026), tek günlük hackathon, katılımcı oylaması, slaytsız canlı demo.
+Bağlam: Monad Blitz İstanbul (26 Eylül 2026), tek günlük hackathon, katılımcı oylaması, canlı demo.
 Geliştirici: Furkan (AI + gömülü sistemler geçmişi, web3'te yeni). Konuşma dili Türkçe.
+Proje gün içinde "AI hakemli emanet"ten (AIEscrow) bu tasarıma **pivot** etti. Eski kod git geçmişinde duruyor (commit `e33960b`).
 
 ## Okuma sırası
 1. `docs/handoff/01-STATUS.md` — ne bitti, ne doğrulandı, ne doğrulanmadı
@@ -18,31 +20,30 @@ Geliştirici: Furkan (AI + gömülü sistemler geçmişi, web3'te yeni). Konuşm
 5. `docs/handoff/05-NEXT-STEPS.md` — öncelikli yapılacaklar
 6. `docs/handoff/06-RUNBOOK.md` — komutlar ve sorun giderme
 
+`docs/AI-Hakemli-Emanet-Mimari.pdf` **eski tasarıma** ait (AIEscrow). Yeni tasarım için güncellenmedi.
+
 ## Dosya haritası
 ```
-contracts/AIEscrow.sol   Solidity 0.8.28 kontrat (tek kontrat)
-build/AIEscrow.json      derlenmiş abi + bytecode (commit'li; kontrat değişirse yeniden üret)
-compile.js               solc-js ile derleme → build/AIEscrow.json
-chain.py                 web3.py yardımcıları (bağlantı, gas'lı gönderim, .env okuma/yazma)
-deploy.py                deploy + 3 hakem cüzdanı üretme/fonlama + dashboard/config.js üretme
-judge.py                 hakem node'u (anthropic | openai | gemini | mock, --corrupt)
-demo.py                  CLI: setup / run good|bad|inject / create / submit / status
-dashboard/index.html     büyük ekran (ethers v6 UMD yerel dosya, config.js deploy'da üretilir)
-test_escrow.py           kontrat testleri (eth-tester, internetsiz)
-docs/                    handoff paketi + mimari PDF
+contracts/PeerReview.sol   tek kontrat (Solidity 0.8.28, viaIR, cancun)
+build/PeerReview.json      derlenmiş abi + bytecode (commit'li; kontrat değişirse yeniden üret)
+compile.js                 contracts/*.sol → build/<Ad>.json
+test_review.py             13 test (eth-tester, internetsiz)
+chain.py                   web3.py yardımcıları, commit_hash, gas'lı gönderim, .env okuma/yazma
+deploy.py                  deploy + bots/botN.env + app/config.js + dashboard/config.js
+cards.py                   fonlanmış QR cüzdan kartları → cards/ (gitignore)
+reviewer_bot.py            otomatik değerlendirici + süresi dolan işleri ilerleten bekçi
+demo.py                    setup / post / run / submit / status / tick / pool
+app/index.html             telefon sayfası (değerlendirici + freelancer), tarayıcıda burner cüzdan
+dashboard/index.html       büyük ekran
+vendor/ethers.umd.min.js   ethers v6
 ```
 
 ## Kesin kurallar
-- **Gizli anahtarları asla commit etme.** `.env`, `judge*.env` gitignore'da. Yalnızca `.env.example` repoda.
-- Kontratı değiştirirsen: `node compile.js` → `python test_escrow.py` (7/7 geçmeli) → gerekirse test ekle.
-- Kontrat değişince ABI değişirse `dashboard/index.html` içindeki insan-okur ABI dizisini de güncelle.
-- Oylama sayımı **zincirde** kalmalı. Oyları zincir dışında sayıp tek yetkili adresten ödeme yapan bir tasarıma geçme; fikrin tüm gerekçesi bu (bkz. 04-DECISIONS.md).
-- Monad gas'ı verilen **limite** göre keser: işlemleri `chain.send()` üzerinden gönder (tahmin × 1.15).
-- Python ≥ 3.10 (`str | None` sözdizimi kullanılıyor).
-- Arayüz metinleri Türkçe; kod tanımlayıcıları İngilizce.
-
-## Hızlı doğrulama
-```bash
-pip install "web3[tester]" requests
-python test_escrow.py          # 7 test geçti
-```
+- **Gizli anahtarları asla commit etme.** `.env`, `*.env` (bots dahil), `cards/`, `.bot-state/` gitignore'da.
+- Kontratı değiştirirsen: `node compile.js` → `python test_review.py` (13/13) → gerekirse test ekle.
+- ABI değişirse `app/index.html` ve `dashboard/index.html` içindeki insan-okur ABI dizilerini güncelle.
+- Kontrata **owner, admin, pause ya da upgradeable proxy ekleme.** "Kimse değiştiremez" iddiası buna dayanıyor.
+- Oylama sayımı, medyan, ödeme ve ceza **zincirde** kalmalı.
+- Mühür hash'i: `keccak256(abi.encode(jobId, reviewer, score, salt, comment))`. `chain.commit_hash` ve app'teki JS aynı olmalı. Test bunu kontrol ediyor.
+- Monad gas'ı verilen **limite** göre keser. Python'da `chain.send()`, JS'te `send()` (tahmin × 1.15) kullan.
+- Python ≥ 3.10. Arayüz metinleri Türkçe, kod tanımlayıcıları İngilizce.

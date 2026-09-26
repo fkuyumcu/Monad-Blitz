@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3eee3">
+<title>Kurul · Değerlendirici</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f3eee3; --paper2:#ebe4d5; --ink:#16130f; --soft:#5c554a; --kabul:#1d6a3a; --ret:#c0271d; --ceza:#fbe7b0;
+          --serif:"Fraunces",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"IBM Plex Sans",system-ui,sans-serif; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--paper); color:var(--ink); }
+  body { font:16px/1.5 var(--sans); padding:0 16px calc(28px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; }
+  header { padding:16px 0 10px; border-bottom:3px double var(--ink); }
+  h1 { margin:0; font:800 30px/1 var(--serif); letter-spacing:-.01em; }
+  .who { margin-top:8px; display:flex; justify-content:space-between; gap:10px; font:400 12px var(--mono); flex-wrap:wrap; }
+  .who b { font-weight:600; }
+  nav { display:flex; border-bottom:1px solid var(--ink); }
+  nav button { flex:1; font:600 12px var(--mono); text-transform:uppercase; letter-spacing:.08em; background:none; border:0;
+               border-right:1px solid var(--ink); padding:12px 4px; color:var(--ink); }
+  nav button:last-child { border-right:0; }
+  nav button.on { background:var(--ink); color:var(--paper); }
+  nav button span { display:inline-block; min-width:18px; margin-left:4px; background:var(--ret); color:#fff; border-radius:9px; padding:0 5px; font-size:11px; }
+  .etiket { font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.12em; color:var(--soft); margin:14px 0 6px; }
+  .dosya { border-bottom:1px solid var(--ink); padding:14px 0 16px; }
+  .dosya h2 { margin:0; font:600 22px var(--serif); display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .dosya h2 small { font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.08em; border:1.5px solid var(--ink); padding:1px 6px; white-space:nowrap; }
+  pre { margin:0; white-space:pre-wrap; word-break:break-word; font:400 15px/1.5 var(--mono); background:var(--paper2); padding:10px 12px; }
+  .puan { display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin-top:6px; border:1.5px solid var(--ink); }
+  .puan button { font:600 22px var(--serif); padding:12px 0; background:#fff; border:0; border-right:1px solid var(--ink); border-bottom:1px solid var(--ink); color:var(--ink); }
+  .puan button:nth-child(5n) { border-right:0; }
+  .puan button:nth-child(n+6) { border-bottom:0; }
+  .puan button.on { background:var(--ink); color:var(--paper); }
+  textarea { width:100%; min-height:84px; font:15px/1.4 var(--sans); border:1.5px solid var(--ink); background:#fff; padding:10px; border-radius:0; resize:vertical; }
+  .btn { display:block; width:100%; margin-top:12px; font:600 15px var(--mono); text-transform:uppercase; letter-spacing:.06em;
+         background:var(--ink); color:var(--paper); border:0; padding:15px 12px; }
+  .btn.ghost { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+  .btn:disabled { opacity:.45; }
+  .hata { color:var(--ret); font:600 13px var(--mono); margin-top:8px; min-height:1em; }
+  .durum { font:400 14px var(--mono); margin-top:10px; }
+  .muhur { display:inline-block; font:800 26px/1 var(--serif); letter-spacing:.05em; border:3.5px solid currentColor; padding:5px 12px 3px; transform:rotate(-3deg); margin:8px 0 4px; }
+  .muhur.gri { color:var(--soft); border-style:dashed; transform:none; font-size:20px; }
+  .muhur.ok { color:var(--kabul); } .muhur.no { color:var(--ret); }
+  .kutu { border:1.5px solid var(--ink); padding:12px 14px; margin-top:12px; background:#fff; }
+  .kutu.sari { background:var(--ceza); }
+  .bos { font:400 italic 18px/1.4 var(--serif); color:var(--soft); padding:28px 0; text-align:center; }
+  table { width:100%; border-collapse:collapse; font:14px var(--mono); }
+  td { padding:7px 0; border-bottom:1px dotted var(--soft); } td:last-child { text-align:right; font-weight:600; }
+  .kural { font-size:14px; } .kural li { margin:4px 0; }
+  a { color:inherit; }
+  .toast { position:sticky; bottom:12px; background:var(--ink); color:var(--paper); font:600 13px var(--mono); padding:10px 12px; margin-top:14px; display:none; }
+  .toast.on { display:block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Kurul</h1>
+  <div class="who"><span>Cüzdan <b id="addr">—</b></span><span>Bakiye <b id="bal">—</b> MON</span></div>
+</header>
+<nav>
+  <button id="t-rev" class="on">Görevler <span id="n-rev" hidden>0</span></button>
+  <button id="t-free">İş al</button>
+  <button id="t-me">Profil</button>
+</nav>
+<main id="view"></main>
+<div class="toast" id="toast"></div>
+
+<script src="../vendor/ethers.umd.min.js"></script>
+<script src="config.js" onerror="window.PR_CONFIG = window.PR_CONFIG || {}"></script>
+<script>
+const ABI = [
+  "function reviewerStake() view returns (uint256)",
+  "function commitWindow() view returns (uint256)",
+  "function jobCount() view returns (uint256)",
+  "function getJob(uint256) view returns (tuple(address client,address worker,uint256 amount,uint256 fee,uint8 status,uint8 commitCount,uint8 revealCount,uint8 finalScore,uint64 commitDeadline,uint64 revealDeadline,address[3] reviewers,bytes32[3] commits,uint8[3] scores,string spec,string deliverable))",
+  "function reviewerInfo(address) view returns (bool registered,uint32 reviews,uint32 weightSum,uint32 open,uint256 stake,uint256 earned,uint256 slashed)",
+  "function register() payable",
+  "function topUp() payable",
+  "function submit(uint256,string)",
+  "function commit(uint256,bytes32)",
+  "function reveal(uint256,uint8,bytes32,string)",
+  "function finalize(uint256)",
+];
+const ZERO = "0x0000000000000000000000000000000000000000";
+const ZERO32 = "0x" + "00".repeat(32);
+const STATUS = ["Açık", "Mühürlü oylama", "Açıklama", "Sonuçlandı", "İptal"];
+
+// ---- ayarlar: URL'nin # kısmı > config.js ----
+const hp = new URLSearchParams(location.hash.slice(1));
+const CFG = Object.assign({ rpc: "https://testnet-rpc.monad.xyz", explorer: "https://testnet.monadvision.com" }, window.PR_CONFIG || {});
+if (hp.get("c")) CFG.contract = hp.get("c");
+if (hp.get("r")) CFG.rpc = hp.get("r");
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+let key = hp.get("k") || store.get("kurul-key");
+if (!key) key = ethers.Wallet.createRandom().privateKey;
+store.set("kurul-key", key);
+if (hp.get("k")) history.replaceState(null, "", location.pathname + (hp.get("c") ? `#c=${hp.get("c")}` : "")); // anahtarı adres çubuğundan sil
+
+const provider = new ethers.JsonRpcProvider(CFG.rpc);
+const wallet = new ethers.Wallet(key, provider);
+const c = new ethers.Contract(CFG.contract, ABI, wallet);
+const $ = (id) => document.getElementById(id);
+const fmt = (w) => Number(ethers.formatEther(w)).toLocaleString("tr-TR", { maximumFractionDigits: 5 });
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+const coder = ethers.AbiCoder.defaultAbiCoder();
+$("addr").textContent = wallet.address.slice(0, 6) + "…" + wallet.address.slice(-4);
+
+let tab = "rev", me = null, stakeMin = 0n, jobs = [], busy = false, now = 0;
+const draft = {}; // jobId -> {score, comment}
+
+function toast(msg, ms = 3500) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), ms);
+}
+const saltKey = (jid) => `kurul:${CFG.contract}:${wallet.address}:${jid}`;
+
+async function send(fnName, args, value = 0n) {
+  const fn = c.getFunction(fnName);
+  const est = await fn.estimateGas(...args, { value });
+  const nonce = await provider.getTransactionCount(wallet.address, "pending"); // önbelleğe takılmasın
+  const tx = await fn(...args, { value, nonce, gasLimit: (est * 115n) / 100n + 5000n }); // Monad gas'ı limite göre keser
+  return tx.wait();
+}
+
+async function act(label, f) {
+  if (busy) return; busy = true; render();
+  try { await f(); toast(label + " ✓"); }
+  catch (e) { toast("Hata: " + (e.shortMessage || e.reason || e.message).slice(0, 140), 6000); }
+  finally { busy = false; await refresh(); }
+}
+
+async function refresh() {
+  try {
+    const [bal, info, n, blk] = await Promise.all([
+      provider.getBalance(wallet.address), c.reviewerInfo(wallet.address), c.jobCount(), provider.getBlock("latest")]);
+    now = Number(blk.timestamp);
+    $("bal").textContent = fmt(bal);
+    me = { bal, ...info.toObject() };
+    const ids = []; for (let i = Math.max(0, Number(n) - 25); i < Number(n); i++) ids.push(i);
+    jobs = (await Promise.all(ids.map((i) => c.getJob(i)))).map((j, k) => ({ id: ids[k], ...j.toObject(), reviewers: [...j.reviewers], commits: [...j.commits], scores: [...j.scores].map(Number), status: Number(j.status) }));
+    await autoReveal();
+  } catch (e) { console.warn(e); }
+  render();
+}
+
+function mySlot(j) { return j.reviewers.findIndex((a) => a.toLowerCase() === wallet.address.toLowerCase()); }
+
+async function autoReveal() {
+  // açma aşamasındaki mühürlerimizi otomatik aç (tuz bu telefonda saklı)
+  for (const j of jobs) {
+    const i = mySlot(j);
+    if (i < 0 || j.status !== 2 || j.scores[i] !== 0 || j.commits[i] === ZERO32 || busy) continue;
+    const saved = store.get(saltKey(j.id));
+    if (!saved) continue;
+    const s = JSON.parse(saved);
+    busy = true;
+    try { await send("reveal", [j.id, s.score, s.salt, s.comment]); toast(`Dosya ${j.id}: oyun açıldı ✓`); }
+    catch (e) { console.warn(e); }
+    finally { busy = false; }
+  }
+}
+
+function countdown(dl) {
+  const s = Number(dl) - now;
+  if (s <= 0) return "süre doldu";
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} kaldı`;
+}
+
+// ------------------------------------------------------------------ görünümler
+function viewJoin() {
+  const enough = me.bal > stakeMin;
+  return `<div class="dosya">
+    <div class="etiket">Değerlendirici ol</div>
+    <p style="font:400 19px/1.4 var(--serif);margin:0 0 10px">Freelancer teslimatlarını 1–10 arası puanla. Diğer iki değerlendiriciyle birbirinizin puanını görmeden oy verirsiniz.</p>
+    <ul class="kural">
+      <li><b>İsabet kazandırır:</b> nihai puan üç puanın medyanı. Ona ne kadar yakınsan değerlendirme ücretinden o kadar pay alırsın.</li>
+      <li><b>Sapma kaybettirir:</b> medyandan 3 puan ya da fazla saparsan veya süresinde oy vermezsen teminatından kesilir.</li>
+      <li><b>Geri alınamaz:</b> puanın ve yorumun zincire yazılır. Kimse, yönetici bile, değiştiremez.</li>
+    </ul>
+    <button class="btn" id="join" ${!enough || busy ? "disabled" : ""}>Teminat yatır · ${fmt(stakeMin)} MON</button>
+    ${enough ? "" : `<div class="hata">Bakiyen yetersiz. Kart cüzdanı kullanıyorsan organizatöre haber ver.</div>`}
+  </div>`;
+}
+
+function reviewCard(j) {
+  const i = mySlot(j);
+  const committed = j.commits[i] !== ZERO32;
+  const myScore = j.scores[i];
+  let body = "";
+  if (j.status === 1 && !committed) {
+    if (Number(j.commitDeadline) < now) body = `<div class="durum">Mühür süresi doldu.</div>`;
+    else {
+      const d = draft[j.id] || {};
+      body = `<div class="etiket">Puanın (1–10)</div>
+        <div class="puan">${[1,2,3,4,5,6,7,8,9,10].map((n) => `<button data-score="${j.id}:${n}" class="${d.score === n ? "on" : ""}">${n}</button>`).join("")}</div>
+        <div class="etiket">Gerekçe (zincire yazılır, değiştirilemez)</div>
+        <textarea data-comment="${j.id}" maxlength="140" placeholder="Kısa gerekçe…">${esc(d.comment || "")}</textarea>
+        <div class="hata" id="err-${j.id}"></div>
+        <button class="btn" data-commit="${j.id}" ${busy ? "disabled" : ""}>Mühürle ve gönder</button>
+        <div class="durum">${countdown(j.commitDeadline)} · mühür ${j.commitCount}/3</div>`;
+    }
+  } else if (j.status === 1) {
+    body = `<div class="muhur gri">Mühürlendi</div><div class="durum">Diğer değerlendiriciler bekleniyor · ${j.commitCount}/3 · ${countdown(j.commitDeadline)}</div>`;
+  } else if (j.status === 2) {
+    body = myScore ? `<div class="muhur gri">Açıldı · ${myScore}/10</div><div class="durum">Diğer oylar açılıyor · ${j.revealCount}/${j.commitCount}</div>`
+                   : `<div class="muhur gri">Açılıyor…</div><div class="durum">Oyun otomatik açılacak</div>`;
+  } else if (j.status === 3) {
+    const fin = Number(j.finalScore);
+    if (!myScore) body = `<div class="muhur no">Oy yok</div><div class="kutu sari">Süresinde oy vermediğin için teminatından kesildi.</div>`;
+    else {
+      const dev = Math.abs(myScore - fin), w = dev >= 3 ? 0 : 3 - dev;
+      body = `<div class="muhur ${w ? "ok" : "no"}">${w ? "İSABET" : "SAPMA"}</div>
+        <table><tr><td>Senin puanın</td><td>${myScore}/10</td></tr><tr><td>Nihai puan (medyan)</td><td>${fin}/10</td></tr>
+        <tr><td>İsabet ağırlığın</td><td>${"●".repeat(w)}${"○".repeat(3 - w)}</td></tr></table>
+        ${w ? "" : `<div class="kutu sari">Medyandan ${dev} puan saptın, teminatından kesildi.</div>`}`;
+    }
+  }
+  if ((j.status === 1 && Number(j.commitDeadline) < now) || (j.status === 2 && Number(j.revealDeadline) < now))
+    body += `<button class="btn ghost" data-tick="${j.id}" ${busy ? "disabled" : ""}>Süreyi ilerlet</button>`;
+  return `<div class="dosya"><h2>Dosya No. ${j.id} <small>${STATUS[j.status]}</small></h2>
+    <div class="etiket">Şartname</div><pre>${esc(j.spec)}</pre>
+    <div class="etiket">Teslimat</div><pre>${esc(j.deliverable)}</pre>${body}</div>`;
+}
+
+function viewReviews() {
+  if (!me.registered) return viewJoin();
+  const mine = jobs.filter((j) => mySlot(j) >= 0 && j.status !== 4).reverse();
+  let top = "";
+  if (me.stake < stakeMin) top = `<div class="kutu sari">Teminatın cezalar yüzünden eşiğin altında, yeni görev alamazsın.
+      <button class="btn" id="topup" ${busy ? "disabled" : ""}>Teminatı tamamla · ${fmt(stakeMin - me.stake)} MON</button></div>`;
+  if (!mine.length) return top + `<div class="bos">Havuzdasın. Sana bir teslimat atandığında burada görünecek.</div>`;
+  return top + mine.map(reviewCard).join("");
+}
+
+function viewFreelance() {
+  const open = jobs.filter((j) => j.status === 0 && (j.worker === ZERO || j.worker.toLowerCase() === wallet.address.toLowerCase())).reverse();
+  const mine = jobs.filter((j) => j.worker.toLowerCase() === wallet.address.toLowerCase() && j.status >= 1).reverse();
+  let html = open.length ? open.map((j) => `<div class="dosya"><h2>Dosya No. ${j.id} <small>${fmt(j.amount)} MON</small></h2>
+      <div class="etiket">Şartname</div><pre>${esc(j.spec)}</pre>
+      <div class="etiket">Teslimatın</div><textarea data-deliv="${j.id}" placeholder="İşini buraya yaz…">${esc((draft["d" + j.id]) || "")}</textarea>
+      <div class="hata" id="derr-${j.id}"></div>
+      <button class="btn" data-submit="${j.id}" ${busy ? "disabled" : ""}>Teslim et</button>
+      <div class="durum">Teslim edince havuzdan rastgele 3 değerlendirici atanır. Puan 8+ ise tam ödeme, altındaysa puan oranında.</div></div>`).join("")
+    : `<div class="bos">Şu an açık iş yok.</div>`;
+  if (mine.length) html += `<div class="etiket">Teslim ettiklerin</div>` + mine.map((j) => {
+    const fin = Number(j.finalScore);
+    const pay = j.status === 3 ? (fin >= 8 ? j.amount : (j.amount * BigInt(fin)) / 10n) : null;
+    return `<div class="dosya"><h2>Dosya No. ${j.id} <small>${STATUS[j.status]}</small></h2>
+      ${j.status === 3 ? `<table><tr><td>Nihai puan</td><td>${fin}/10</td></tr><tr><td>Aldığın ödeme</td><td>${fmt(pay)} MON</td></tr></table>`
+                       : `<div class="durum">Değerlendiriliyor · mühür ${j.commitCount}/3 · açılan ${j.revealCount}</div>`}</div>`;
+  }).join("");
+  return html;
+}
+
+function viewMe() {
+  const acc = me.reviews ? Math.round((Number(me.weightSum) / (3 * Number(me.reviews))) * 100) : 0;
+  return `<div class="dosya"><div class="etiket">İtibar (zincirde, herkese açık)</div>
+    <table>
+      <tr><td>İsabet oranı</td><td>%${acc}</td></tr>
+      <tr><td>Sonuçlanan değerlendirme</td><td>${me.reviews}</td></tr>
+      <tr><td>Toplam kazanç</td><td>${fmt(me.earned)} MON</td></tr>
+      <tr><td>Toplam ceza</td><td>${fmt(me.slashed)} MON</td></tr>
+      <tr><td>Teminat</td><td>${fmt(me.stake)} MON</td></tr>
+    </table>
+    <div class="durum"><a target="_blank" href="${CFG.explorer}/address/${wallet.address}">Cüzdanı explorer'da gör ↗</a></div></div>`;
+}
+
+function render() {
+  if (!me) { $("view").innerHTML = `<div class="bos">Zincire bağlanılıyor…</div>`; return; }
+  const pending = jobs.filter((j) => { const i = mySlot(j); return i >= 0 && j.status === 1 && j.commits[i] === ZERO32 && Number(j.commitDeadline) > now; }).length;
+  $("n-rev").hidden = !pending; $("n-rev").textContent = pending;
+  // yazarken odak kaybolmasın: textarea odaktaysa yeniden çizme
+  const a = document.activeElement;
+  if (a && a.tagName === "TEXTAREA") return;
+  $("view").innerHTML = tab === "rev" ? viewReviews() : tab === "free" ? viewFreelance() : viewMe();
+}
+
+// ------------------------------------------------------------------ olaylar
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.id === "t-rev" || t.id === "t-free" || t.id === "t-me") {
+    tab = t.id.slice(2); document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b === t)); render(); return;
+  }
+  if (t.id === "join") return act("Havuza katıldın", () => send("register", [], stakeMin));
+  if (t.id === "topup") return act("Teminat tamamlandı", () => send("topUp", [], stakeMin - me.stake));
+  if (t.dataset.score) {
+    const [jid, n] = t.dataset.score.split(":").map(Number);
+    draft[jid] = { ...(draft[jid] || {}), score: n }; render(); return;
+  }
+  if (t.dataset.commit) {
+    const jid = Number(t.dataset.commit), d = draft[jid] || {};
+    if (!d.score) { $("err-" + jid).textContent = "Önce 1–10 arası bir puan seç."; return; }
+    const comment = (d.comment || "").trim();
+    const salt = ethers.hexlify(ethers.randomBytes(32));
+    store.set(saltKey(jid), JSON.stringify({ score: d.score, salt, comment })); // açmak için bu telefonda saklanır
+    const hash = ethers.keccak256(coder.encode(["uint256", "address", "uint8", "bytes32", "string"], [jid, wallet.address, d.score, salt, comment]));
+    return act("Oyun mühürlendi", () => send("commit", [jid, hash]));
+  }
+  if (t.dataset.tick) return act("Süre ilerletildi", () => send("finalize", [Number(t.dataset.tick)]));
+  if (t.dataset.submit) {
+    const jid = Number(t.dataset.submit), text = (draft["d" + jid] || "").trim();
+    if (!text) { $("derr-" + jid).textContent = "Teslimat boş olamaz."; return; }
+    return act("Teslim edildi", () => send("submit", [jid, text]));
+  }
+});
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.dataset.comment) { const jid = Number(t.dataset.comment); draft[jid] = { ...(draft[jid] || {}), comment: t.value }; $("err-" + jid).textContent = ""; }
+  if (t.dataset.deliv) { draft["d" + t.dataset.deliv] = t.value; $("derr-" + t.dataset.deliv).textContent = ""; }
+});
+document.addEventListener("focusout", () => setTimeout(render, 0));
+
+(async () => {
+  if (!CFG.contract) { $("view").innerHTML = `<div class="bos">Kontrat adresi yok. QR kartını okut ya da config.js'i kontrol et.</div>`; return; }
+  stakeMin = await c.reviewerStake();
+  await refresh();
+  setInterval(refresh, 2500);
+})();
+</script>
+</body>
+</html>

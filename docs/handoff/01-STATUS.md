@@ -1,37 +1,26 @@
-# 01 — Durum (26 Eylül 2026, ~12:20)
+# 01 — Durum (26 Eylül 2026, ~13:00)
 
 ## Özet
-Çalışan bir MVP var: kontrat, 3 hakem node'u, deploy/demo script'leri ve canlı ekran.
-Uçtan uca akış **yerel test zincirinde** (Hardhat, chainId 31337) doğrulandı.
-**Monad testnet'te ve gerçek LLM'lerle henüz çalıştırılmadı.**
+Kurul çalışır durumda: kontrat, telefon sayfası, büyük ekran, bot değerlendiriciler, QR kart üretimi.
+Uçtan uca akış **yerel test zincirinde** (Hardhat, 1 sn blok) doğrulandı, **Monad testnet'te henüz çalıştırılmadı.**
 
-## Tamamlananlar
-| Parça | Durum | Nasıl doğrulandı |
-|---|---|---|
-| `AIEscrow.sol` | bitti | `test_escrow.py` 7/7 geçiyor |
-| 2/3 oy ile ödeme / iade | bitti | test + yerel e2e |
-| Çoğunluğa ters oyda teminat kesme (hem önce hem geç gelen oy) | bitti | test + yerel e2e |
-| Teminatı yetmeyen hakemin oyunu reddetme | bitti | test; e2e'de yakalandı, judge.py otomatik tamamlıyor |
-| `judge.py` (mock sağlayıcı) | bitti | yerel e2e: good→ödeme, bad→iade+ceza, inject→red |
-| `judge.py` anthropic/openai/gemini | yazıldı | **denenmedi** (API anahtarı yoktu) |
-| `deploy.py --gen-judges` | bitti | yerel zincirde |
-| `demo.py` | bitti | yerel zincirde |
-| `dashboard/index.html` (editoryal "karar belgesi" tasarımı) | bitti | Playwright ekran görüntüsüyle kontrol edildi |
-| GitHub | yüklendi | `main` dalı |
+## Doğrulananlar
+| Parça | Nasıl |
+|---|---|
+| `PeerReview.sol` | `test_review.py` 13/13: tam/kısmi ödeme, ağırlıklı ücret, sapana ceza, mühür korumaları, zaman aşımı yolları, oy vermeyene ceza, teminat kilidi, iptal, cezalı değerlendiricinin havuz dışı kalması, iş veren/freelancer'ın atanmaması, açık iş |
+| Telefon sayfası | Playwright (390px): kart linkiyle açıldı → teminat yatırdı → görev geldi → 9 puan + yorum → mühürledi → otomatik açtı → "İSABET" |
+| Büyük ekran | Doğru teslimat (9/9/9 → tam ödeme) ve yanlış teslimat + tembel bot (10/3/3 → medyan 3, %30 ödeme, bot −0,001 MON) senaryoları |
+| Botlar | mock sağlayıcı, honest ve lazy modları, teminat tamamlama |
+| `deploy.py`, `demo.py`, `cards.py` | yerel zincirde |
 
-## Doğrulanmamış riskler (öncelik sırasıyla)
-1. **Monad testnet deploy'u.** Kontrat `evmVersion: cancun` ile derlendi. Monad testnet'in bunu kabul ettiği varsayılıyor. Deploy hata verirse `compile.js` içinde `evmVersion` değerini `"paris"` yapıp yeniden derle.
-2. **Gerçek LLM çağrıları.** Varsayılan model adları (`claude-haiku-4-5-20251001`, `gpt-4.1-mini`, `gemini-2.5-flash`) güncelliğini yitirmiş olabilir. Hata alınırsa `.env` içinde `MODEL=` ile değiştir.
-3. **RPC limitleri.** Public RPC saniyede 20–50 istek. Dashboard 1 sn'de bir, 3 hakem 1,5 sn'de bir sorguluyor. Toplamda sınırda kalabilir. Gerekirse `--interval` değerini artır ya da hakemlere farklı RPC ver (Ankr, monadinfra).
-4. **eth_getLogs aralığı.** Dashboard aralığı 90 bloklık parçalara bölerek tarıyor. Sayfa açıldığında yalnızca son ~90 bloğu gösteriyor.
-5. **Faucet miktarı.** Varsayılan tutarlar küçük (teminat 0.01, ceza 0.005, iş 0.01, hakem başı 0.03 MON). Deploy cüzdanında en az ~0.15 MON olmalı.
+## Doğrulanmayanlar (risk sırasıyla)
+1. **Monad testnet deploy'u** (viaIR + cancun). Hata verirse `compile.js` içinde `evmVersion: "paris"`.
+2. **Gas maliyeti / faucet.** `deploy.py` ve `cards.py` kart başına bütçeyi `gasPrice × 350k × işlem × 1.3` olarak hesaplıyor. Testnet gas fiyatına göre kart başı tutar büyüyebilir. Bakiye yetmezse `--actions` değerini düşür.
+3. **Gerçek LLM'ler** (`PROVIDER=anthropic|openai|gemini`) denenmedi. Model adları eskiyebilir, `MODEL=` ile değiştirilebilir.
+4. **Public RPC limitleri.** Telefonlar 2,5 sn, ekran 1,2 sn, botlar 2 sn aralıkla sorguluyor. Çok katılımcıda 429 gelebilir. Gerekirse aralıkları artır ya da farklı RPC kullan.
+5. **Telefon sayfasının barındırılması.** Salon Wi-Fi'ı cihazları birbirinden yalıtıyorsa yerel IP çalışmaz. GitHub Pages önerilir.
+6. **Süreler.** Varsayılan mühür 150 sn, açma 90 sn. Demo için kısaltılabilir (`deploy.py --commit 60 --reveal 45`).
 
-## Test ortamında görülen ve düzeltilen hata
-Rüşvetli hakemin teminatı kesildikten sonraki oyunda kontrat `StakeTooLow` ile reddetti. Bu doğru davranış. `judge.py` artık oy vermeden önce eksik teminatı otomatik tamamlıyor.
-
-## Bilinçli olarak yapılmayanlar
-- Hakem kaydı açık değil. 3 hakem deploy anında sabitleniyor.
-- Zaman aşımı, itiraz ve hakem değişimi yok.
-- Teslimat zincirde düz metin olarak tutuluyor (IPFS yok).
-- Teminat çekme serbest, bekleme süresi yok.
-- Kitleden QR ile teslimat gönderme arayüzü yok. Teslimatlar `demo.py` ile gönderiliyor.
+## Bilinen küçük sorunlar
+- Hardhat'ta telefon sayfası bir kez "nonce too low" verdi. Nonce artık her işlemde `pending` olarak açıkça alınıyor. Sayfa hatayı yakalayıp bir sonraki turda tekrar denediği için akışı bozmadı.
+- `reviewer_bot.py` web3'ün "MismatchedABI" uyarısını basıyor (aynı makbuzdaki başka olay). Zararsız.

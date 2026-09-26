@@ -2,42 +2,45 @@
 
 ## Kurulum
 ```bash
-pip install "web3[tester]" requests     # Python ≥ 3.10
-npm install                             # sadece kontratı yeniden derlemek için (solc 0.8.28)
-cp .env.example .env                    # DEPLOYER_KEY doldur (faucet.monad.xyz'den MON)
+pip install "web3[tester]" requests qrcode     # Python ≥ 3.10
+npm install                                    # sadece kontratı yeniden derlemek için
+cp .env.example .env                           # DEPLOYER_KEY
 ```
 
-## Temel komutlar
+## Komutlar
 ```bash
-node compile.js                          # contracts/ → build/AIEscrow.json
-python test_escrow.py                    # 7 test, internetsiz
-python deploy.py --gen-judges            # deploy + judge1..3.env + dashboard/config.js
-python deploy.py --judges A,B,C          # dış hakemlerle deploy
-python demo.py setup                     # worker cüzdanı + gas parası
-python judge.py --env judge1.env         # dürüst hakem
-python judge.py --env judge3.env --corrupt --interval 0.5
-cd dashboard && python -m http.server 8080
-python demo.py run good|bad|inject
-python demo.py status <id>
+node compile.js                                # contracts/ → build/
+python test_review.py                          # 13 test
+python deploy.py --bots 3 [--commit 60 --reveal 45 --stake 0.002 --slash 0.001 --fee-bps 1000]
+python demo.py setup                           # freelancer cüzdanı
+python cards.py 10 --url https://fkuyumcu.github.io/Monad-Blitz/app/
+python reviewer_bot.py --env bots/bot1.env [--mode honest|lazy|random] [--provider ...]
+python -m http.server 8080                     # repo kökünden: /dashboard/ ve /app/
+python demo.py post [--open] [--spec ...] [--amount 0.01]
+python demo.py run good|ok|bad|inject
+python demo.py submit <id> "metin" · status <id> · tick <id> · pool
 ```
 
-## Yerelde uçtan uca test (internetsiz, testnet gerekmez)
+## Yerel uçtan uca test (testnet gerekmez)
 ```bash
-npx hardhat node                          # ayrı klasörde: npm i hardhat@2, hardfork: "cancun"
-# .env: DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-#       RPC_URL=http://127.0.0.1:8545
-python deploy.py --gen-judges && python demo.py setup
-# judgeN.env içinde PROVIDER=mock bırak, 3 hakemi başlat, demo.py run ...
+# ayrı klasörde: npm i hardhat@2 && npx hardhat node   (hardfork: cancun)
+curl -X POST localhost:8545 -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"evm_setIntervalMining","params":[1000]}'   # süreler için blok üretimi
+# .env: DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80  RPC_URL=http://127.0.0.1:8545
+python deploy.py --bots 2 --commit 45 --reveal 30 && python demo.py setup
+python cards.py 1 --url http://localhost:8080/app/      # linki tarayıcıda aç
 ```
+Kart linkine `&r=<rpc>` eklenir (RPC varsayılandan farklıysa).
 
 ## Sorun giderme
-| Belirti | Sebep | Çözüm |
-|---|---|---|
-| Revert, veri `0x1cc3b37b` | `StakeTooLow` | Hakemin teminatı eksik. `judge.py` otomatik tamamlar, bakiyesi yetmiyorsa MON gönder. |
-| Revert `0x5c975bda` | `BadStatus` | İş yanlış durumda (ör. teslimattan önce oy). |
-| Revert `0x7c9a1cf9` | `AlreadyVoted` | Normal yarış durumu. judge.py sonraki turda geçer. |
-| Deploy'da "invalid opcode" | EVM sürümü | `compile.js` → `evmVersion: "paris"`, sonra `node compile.js`. |
-| 429 / rate limit | Public RPC | Hakemlere farklı `RPC_URL` ver, `--interval 3`. |
-| Dashboard boş | `config.js` yok ya da eski | `deploy.py` yeniden üretir. Sayfayı demodan önce aç (son ~90 bloğu gösterir). |
-| LLM 404 / model bulunamadı | Model adı eski | `judgeN.env` → `MODEL=<güncel ad>`. |
-| `str | None` hatası | Python < 3.10 | Python'u güncelle. |
+| Belirti | Sebep / çözüm |
+|---|---|
+| `NotEnoughReviewers` | Havuzda iş veren ve freelancer dışında teminatı yeterli en az 3 kişi yok. Botları başlat ya da kart dağıt. |
+| `TooEarly` (reveal) | Üç mühür tamamlanmadı ve süre dolmadı. Bekle. |
+| `BadReveal` | Tuz, puan ya da yorum mühürdekiyle aynı değil. Telefonda farklı tarayıcı veya gizli sekme kullanılmışsa tuz kaybolur. |
+| `StakeTooLow` / `StakeLocked` | Teminat eşiğin altında ya da açık atama varken çekilmeye çalışılıyor. |
+| Değerlendirici oy açmadı | Açma aşamasında telefon sayfası açık değildi. Sayfa açılınca otomatik açar, süre dolduysa ceza kesilir. |
+| İş takıldı | Süre dolduysa `python demo.py tick <id>` ya da telefonda "Süreyi ilerlet". Botlar da otomatik ilerletir. |
+| 429 / rate limit | RPC'yi değiştir (`RPC_URL`, kart linkinde `&r=`) ya da bot `--interval` değerini artır. |
+| Deploy'da "invalid opcode" | `compile.js` → `evmVersion: "paris"`. |
+| Kart bakiyesi yetmiyor | `cards.py --actions 8` ya da faucet'ten MON al. |

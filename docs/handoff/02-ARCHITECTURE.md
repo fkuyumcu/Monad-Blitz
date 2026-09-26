@@ -1,40 +1,37 @@
 # 02 — Mimari
 
-## Bileşenler
 ```
-                ┌──────────── zincir dışı ─────────────┐
- İş veren ──createJob(+MON)──▶ ┌──────────────────────┐
- (demo.py)                    │   AIEscrow (Monad)   │◀── stake() / vote() ── Hakem I   (judge.py, cüzdan A, LLM x)
- İş yapan ──submit(metin)───▶ │  - işler & para      │◀── stake() / vote() ── Hakem II  (judge.py, cüzdan B, LLM y)
- (demo.py)                    │  - oy sayımı (2/3)   │◀── stake() / vote() ── Hakem III (judge.py, cüzdan C, LLM z)
-                              │  - ödeme / iade      │
-                              │  - teminat kesme     │── olaylar ──▶ dashboard/index.html (salt okunur)
-                              └──────────────────────┘
+ İş veren (demo.py) ─ createJob(+MON) ─▶ ┌─────────────────────────────┐
+                                         │ PeerReview (Monad)          │
+ Freelancer (app / demo.py) ─ submit ──▶ │ · emanet + %10 ücret havuzu │ ── olaylar ──▶ dashboard (salt okunur)
+                                         │ · değerlendirici havuzu     │
+ Değerlendirici × N (app / bot)          │ · rastgele 3 atama          │
+   register(+teminat) ───────────────▶   │ · commit → reveal           │
+   commit(hash) / reveal(puan,tuz,yorum) │ · medyan, ödeme, ücret, ceza│
+                                         │ · itibar sayaçları          │
+                                         └─────────────────────────────┘
 ```
 
-**Güven sınırı:** Para, oy sayımı ve ceza zincirde. Zincir dışında sadece iki şey var: LLM'in kararı ve bu kararı imzalayan hakemin anahtarı. Hiçbir sunucu parayı tutmuyor, oy da saymıyor.
+**Güven sınırı:** Para, atama, oy sayımı, medyan, ödeme, ceza ve itibar zincirde. Zincir dışında sadece değerlendiricinin kararı ve tuzu (telefonda ya da botun `.bot-state/` klasöründe) var. Kontratın owner'ı yok.
 
 ## Akış
-1. **İş aç:** `createJob(worker, spec)` payable → `JobCreated`. Durum: `Open`.
-2. **Teslim:** yalnızca `worker`, `submit(jobId, deliverable)` çağırabilir → `Submitted`. Durum: `Submitted`.
-3. **Değerlendirme (her hakem, bağımsız):**
-   - `judge.py` her `interval` saniyede `jobCount()` ve `getJob()` ile durumu okur (olay yerine durum sorgusu kullanılıyor, getLogs sınırlarından kaçınmak için).
-   - `Submitted` durumunda olup henüz oy vermediği işi LLM'e sorar.
-   - Prompt'ta şartname ve teslimat, her çağrıda rastgele üretilen etiketler (`<TESLIMAT_{hex}>`) arasında veri olarak verilir. Sistem mesajı, teslimattaki talimatları hile sayıp reddetmesini söyler. Çıktı katı JSON: `{"approve": bool, "reason": str}`.
-   - Gerekçenin başına `[model]` eklenir (dashboard kart başlığı olarak kullanır). Rüşvetli hakem de kendi model adını gösterir.
-   - Teminatı eksikse önce tamamlar, sonra `vote(jobId, approve, reason)` gönderir.
-4. **Sonuç:** 2 aynı oy geldiği anda kontrat `_resolve` ile ödeme ya da iade yapar → `Resolved`. O ana kadar ters oy vermiş hakem varsa cezalandırılır → `Slashed`.
-5. **Geç oy:** Sonuçtan sonra gelen 3. oy da kabul edilir. Sonuçla uyuşmuyorsa ceza kesilir.
-6. **Dashboard:** `getLogs` ile olayları 90 bloklık parçalar halinde biriktirir, seçili dosyayı `getJob` ve `stakeOf` ile çizer. Yazma işlemi yapmaz.
+1. `createJob(worker, spec)` payable → `fee = value × feeBps / 10000`, `amount = value − fee`. `worker = 0` ise iş açıktır, ilk teslim eden freelancer olur.
+2. `submit(id, deliverable)` → `_pick`, havuzdan uygun 3 kişi seçer: teminatı ≥ eşik, iş veren ya da freelancer değil, tekrarsız. Rastgelelik `keccak(prevrandao, timestamp, id, worker)` ile başlangıç noktası seçilip havuzda dolaşılarak sağlanıyor. Durum `Committing` olur, `commitDeadline = now + commitWindow`.
+3. `commit(id, hash)` → üçüncü mühürde durum `Revealing` olur, `revealDeadline` başlar.
+4. `reveal(id, score, salt, comment)` → hash kontrol edilir. Mühür gönderenlerin hepsi açınca `_finalize` otomatik çalışır.
+5. Süre dolarsa `finalize(id)` herkes tarafından çağrılabilir. `Committing` durumunda ve en az 2 mühür varsa açma aşamasını başlatır, yoksa sonuçlandırır. `Revealing` durumunda sonuçlandırır. Botlar bunu "bekçi" olarak otomatik yapar, telefonda da "Süreyi ilerlet" düğmesi var.
+6. `_finalize`: medyan (2 oyda ortalama, aşağı yuvarlanır) → oy vermeyene ve ≥3 sapana ceza → freelancer ödemesi (≥8 tam, altı orantılı) → ücret + cezalar ağırlıklara göre isabetlilere → küsurat ve kalan iş verene. En az 2 açık oy yoksa her şey iş verene iade edilir.
 
-## Rüşvetli hakem senaryosu (demo çekirdeği)
-`judge.py --corrupt --interval 0.5`: LLM'e sormaz, her şeye hemen "onay" verir. Hızlı olduğu için ilk oyu hep o verir. Diğer iki hakem "red" verince iş iade edilir ve rüşvetçinin teminatından `slashAmount` kesilip haklı çıkan tarafa (iş verene) gönderilir. Kontrat daha sonra onun teminatı tamamlanana kadar oy vermesine izin vermez.
+## İstemciler
+- **Telefon (`app/`)**: Anahtar `#k=` ile gelir ya da tarayıcıda üretilir. `localStorage` erişilemezse yalnızca bellekte tutulur. Sekmeler: Görevler (puanla, mühürle, sonuç), İş al (açık işe teslimat), Profil (itibar). Tuz `localStorage`'da saklanır, açma aşaması gelince oy otomatik açılır.
+- **Büyük ekran (`dashboard/`)**: Olayları 90 bloklık parçalarla `getLogs` ile toplar. Seçili dosya, 3 değerlendirici kartı (İnceliyor → MÜHÜRLÜ → puan ve yorum → isabet ya da ceza), hüküm, itibar tablosu ve tutanak gösterir.
+- **Bot (`reviewer_bot.py`)**: Modlar honest (LLM ya da mock), lazy (hep 10) ve random. Teminatı eksikse tamamlar, süresi dolan işleri ilerletir.
 
-## Ayarlar
-| Dosya | Anahtarlar |
+## Ayar dosyaları
+| Dosya | İçerik |
 |---|---|
-| `.env` | `DEPLOYER_KEY`, `RPC_URL`, `CONTRACT` (deploy yazar), `WORKER_KEY` (demo setup yazar), opsiyonel `CLIENT_KEY` |
-| `judgeN.env` | `JUDGE_KEY`, `CONTRACT`, `RPC_URL`, `PROVIDER`, opsiyonel `MODEL`, `CORRUPT`, sağlayıcı API anahtarı, `OPENAI_BASE_URL` |
-| `dashboard/config.js` | `contract`, `rpc`, `explorer` (deploy yazar, commit'lenmez) |
+| `.env` | `DEPLOYER_KEY`, `RPC_URL`, `CONTRACT`, `WORKER_KEY`, opsiyonel `CLIENT_KEY` |
+| `bots/botN.env` | `BOT_KEY`, `CONTRACT`, `RPC_URL`, `PROVIDER`, `MODE`, opsiyonel `MODEL`, API anahtarı |
+| `app/config.js`, `dashboard/config.js` | `window.PR_CONFIG = { contract, rpc, explorer, chainId }` (anahtar içermez) |
 
-Ağ: Monad testnet, chainId 10143. RPC: `https://testnet-rpc.monad.xyz` (yedekler: `https://rpc.ankr.com/monad_testnet`, `https://rpc-testnet.monadinfra.com`). Explorer: `https://testnet.monadvision.com`. Faucet: `https://faucet.monad.xyz`.
+Ağ: Monad testnet, chainId 10143, RPC `https://testnet-rpc.monad.xyz`, explorer `https://testnet.monadvision.com`, faucet `https://faucet.monad.xyz`.

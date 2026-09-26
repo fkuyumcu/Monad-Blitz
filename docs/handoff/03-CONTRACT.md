@@ -1,65 +1,57 @@
-# 03 — Kontrat referansı: `AIEscrow.sol`
+# 03 — Kontrat referansı: `PeerReview.sol`
 
-Solidity ^0.8.24, derleyici 0.8.28, optimizer 200, `evmVersion: cancun`. Dış bağımlılık yok.
+Solidity ^0.8.24 · solc 0.8.28 · optimizer 200 · **viaIR** · cancun. Dış bağımlılık yok, owner yok.
 
-## Durum
-| Değişken | Tip | Anlamı |
+## Parametreler
+| Ad | Tür | Varsayılan (deploy.py) |
 |---|---|---|
-| `JUDGE_COUNT` | const 3 | hakem sayısı |
-| `QUORUM` | const 2 | sonuç için gereken aynı oy |
-| `judgeStake` | immutable uint | oy verebilmek için gereken asgari teminat |
-| `slashAmount` | immutable uint | ters oy başına kesinti (≤ judgeStake) |
-| `judges` | address[3] | sabit hakem listesi |
-| `isJudge` | mapping(address⇒bool) | |
-| `stakeOf` | mapping(address⇒uint) | hakem teminatı |
-| `_jobs` | Job[] | işler (id = dizi indeksi) |
-| `voteOf` | mapping(jobId⇒mapping(address⇒uint8)) | 0 yok, 1 onay, 2 red |
+| `MAX_SCORE` / `PASS_SCORE` / `SLASH_DEV` / `REVIEWERS` | sabit | 10 / 8 / 3 / 3 |
+| `reviewerStake` | immutable | 0.002 MON |
+| `slashAmount` | immutable (≤ stake) | 0.001 MON |
+| `feeBps` | immutable (≤ 5000) | 1000 (%10) |
+| `commitWindow` / `revealWindow` | immutable, sn | 150 / 90 |
 
-`Job { client, worker, amount, status, approvals, rejections, spec, deliverable }`
-`Status: Open(0), Submitted(1), Paid(2), Refunded(3), Cancelled(4)`
+## Veri
+`Status: Open(0) Committing(1) Revealing(2) Finalized(3) Cancelled(4)`
+
+`Job { client, worker, amount, fee, status, commitCount, revealCount, finalScore, commitDeadline, revealDeadline, reviewers[3], commits[3], scores[3] (0 = açılmadı), spec, deliverable }`
+
+`Reviewer { registered, reviews, weightSum (her iş 0..3), open, stake, earned, slashed }`. İsabet oranı = `weightSum / (3·reviews)`.
 
 ## Fonksiyonlar
-| Fonksiyon | Kim | Ön koşul | Etki |
+| Fonksiyon | Kim | Koşul | Etki |
 |---|---|---|---|
-| `constructor(address[3] judges, uint judgeStake, uint slashAmount)` | deployer | adresler sıfır değil ve tekrarsız, `slash ≤ stake` | hakemleri sabitler |
-| `stake()` payable | hakem | `isJudge` | `stakeOf += value` → `JudgeStaked` |
-| `withdrawStake(amount)` | herkes (fiilen hakem) | `amount ≤ stakeOf` | geri öder → `JudgeWithdrew` |
-| `createJob(worker, spec)` payable | herkes | `value > 0` | yeni iş, `Open` → `JobCreated` |
-| `cancel(jobId)` | iş veren | `Open` | iade, `Cancelled` → `Cancelled` |
-| `submit(jobId, deliverable)` | iş yapan | `Open` | `Submitted` → `Submitted` |
-| `vote(jobId, approve, reason)` | hakem | `stakeOf ≥ judgeStake`, durum Submitted/Paid/Refunded, daha önce oy yok | aşağıya bak |
-| `jobCount()`, `getJob(id)`, `getJudges()` | view | | |
+| `register()` payable | herkes | kayıtlı değil, value ≥ stake | havuza girer |
+| `topUp()` payable | kayıtlı | | teminat artar |
+| `withdrawStake(a)` | herkes | açık ataması varsa kalan ≥ stake | çeker |
+| `createJob(worker, spec)` payable | herkes | value > 0 | ücret ayrılır, iş açılır |
+| `cancel(id)` | iş veren | Open | ödeme ve ücret iade |
+| `submit(id, text)` | freelancer (ya da açık işte herkes, iş veren hariç) | Open, ≥3 uygun değerlendirici | 3 atama, Committing |
+| `commit(id, hash)` | atanmış | Committing, süre içinde, ilk kez | 3. mühürde Revealing |
+| `reveal(id, score, salt, comment)` | atanmış | Revealing (ya da mühür süresi dolmuş ve ≥2 mühür), 1 ≤ score ≤ 10, hash eşleşiyor | hepsi açılınca sonuçlanır |
+| `finalize(id)` | herkes | süre dolmuş | açma aşamasını başlatır ya da sonuçlandırır |
+| `commitHash(...)` | pure | | `keccak256(abi.encode(id, reviewer, score, salt, comment))` |
+| `jobCount`, `getJob`, `poolSize`, `getPool`, `reviewerInfo` | view | | |
 
-### `vote` mantığı
-```
-oyu kaydet; approvals/rejections++; emit Voted
-if status == Submitted:
-    approvals ≥ 2  → _resolve(approved=true)
-    rejections ≥ 2 → _resolve(approved=false)
-else (Paid/Refunded — geç oy):
-    oy ≠ sonuç → _slash
-```
-`_resolve`: durumu Paid/Refunded yapar. O ana kadar sonuca ters oy vermiş hakemleri `_slash` eder, parayı `to` adresine (worker ya da client) gönderir → `Resolved`.
-`_slash`: `min(stakeOf, slashAmount)` keser ve **kazanan tarafa** gönderir → `Slashed`.
+## Sonuçlandırma kuralları
+- En az 2 açık oy yoksa: freelancer 0 alır, tüm tutar ve ücret (ve varsa cezalar) iş verene döner.
+- Oy vermeyen ceza yer: mühür göndermeyen her zaman, mühür gönderip açmayan ise açma aşaması başlamışsa.
+- Oy veren için `dev = |puan − medyan|`. `dev ≥ 3` ise ceza, değilse ağırlık `3 − dev`.
+- Freelancer: `medyan ≥ 8` ise tamamı, değilse `amount × medyan / 10`.
+- Havuz = ücret + tüm cezalar. Ağırlıklara göre dağıtılır, küsurat ve kalan iş verene gider.
 
 ## Olaylar
-`JudgeStaked(judge,total)`, `JudgeWithdrew(judge,amount)`, `JobCreated(jobId,client,worker,amount,spec)`,
-`Submitted(jobId,worker,deliverable)`, `Voted(jobId,judge,approve,reason)`, `Resolved(jobId,approved,to,amount)`,
-`Slashed(jobId,judge,to,amount)`, `Cancelled(jobId)`. `jobId` ve adresler indexed.
+`ReviewerRegistered, StakeChanged, JobCreated, Submitted(…, reviewers[3], commitDeadline), Committed, RevealPhase, Revealed(id, reviewer, score, comment), Slashed, ReviewerPaid(id, reviewer, weight, reward), Finalized(id, finalScore, workerPayout, clientRefund), Cancelled`
 
-## Hatalar (4 baytlık seçiciler hata ayıklamak için)
-`NotJudge`, `NotClient`, `NotWorker`, `BadStatus` (0x5c975bda), `AlreadyVoted` (0x7c9a1cf9),
-`StakeTooLow` (0x1cc3b37b), `ZeroAmount`, `BadJudges`, `TransferFailed`.
+## Hatalar
+`BadParams AlreadyRegistered NotRegistered StakeTooLow StakeLocked ZeroAmount NotClient NotWorker BadStatus NotAssigned AlreadyDone TooLate TooEarly BadReveal BadScore NotEnoughReviewers TransferFailed`
 
-## Değişmezler (testlerle korunuyor)
-- Bir iş en fazla bir kez sonuçlanır. Sonuçtan sonra para hareketi yalnızca ceza olabilir.
-- Bir hakem bir işe en fazla bir kez oy verir.
-- Kontrat bakiyesi = açık/teslim edilmiş işlerin tutarları + tüm teminatlar.
-- Ceza hiçbir zaman hakemin teminatını aşmaz.
+## Değişmezler (testlerle)
+- Sonuçlanan işin puanı ve yorumları değişmez. Durum Finalized olduktan sonra hiçbir fonksiyon işi değiştiremez.
+- Tüm işler sonuçlandıktan sonra kontrat bakiyesi = toplam teminat.
+- İş veren ve freelancer kendi işlerine atanamaz.
+- Ceza hiçbir zaman teminatı aşmaz. Teminatı eşiğin altına düşen, tamamlayana kadar atanamaz.
+- Durum değişikliği para gönderiminden önce yapılır.
 
-## Bilinen zayıflıklar (bilinçli, demo kapsamı)
-- **DoS:** `worker` ya da `client`, ETH kabul etmeyen bir kontratsa `_send` revert eder ve iş kilitlenir. Çözüm: pull-payment deseni (`withdraw()`).
-- **Askıda iş:** 2 hakem oy vermezse `Submitted` durumu sonsuza kadar sürer. Çözüm: deadline + `client` için iade.
-- **Teminat çekme serbest:** Hakem kötü oy vermeden önce teminatını çekebilir. `_slash` o zaman 0 keser. Çözüm: kilit süresi ya da oy başına teminat ayırma.
-- **Sabit hakemler:** Rastgele seçim ve açık kayıt yok. Metropolis aşaması için yol haritasında.
-- **Reentrancy:** Tüm durum değişiklikleri `_send`'den önce yapılıyor. Hakemler ödeme almadığı için `vote` üzerinden reentrancy yolu yok. Yine de ileride `nonReentrant` eklenebilir.
+## Zayıflıklar (bilinçli)
+`prevrandao` rastgeleliği · push ödeme (DoS riski) · çoğunluk = doğruluk varsayımı (tuzak görev yok) · itiraz turu yok · değerlendirici aynı anda çok işe atanabilir · yorumlar zincirde düz metin.

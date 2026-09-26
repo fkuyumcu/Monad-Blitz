@@ -1,25 +1,24 @@
 # 05 — Sıradaki adımlar
 
 ## P0 — Demodan önce (bugün)
-- [ ] Monad testnet'e deploy et (`python deploy.py --gen-judges`). Hata verirse `evmVersion: "paris"` ile yeniden derle.
-- [ ] En az bir hakemi gerçek bir LLM ile çalıştır, mümkünse üç farklı sağlayıcıyla. `good`, `bad` ve `inject` senaryolarının üçünü de dene.
-- [ ] Dashboard'u testnet adresiyle aç ve projektör çözünürlüğünde kontrol et.
-- [ ] `inject` senaryosunda gerçek LLM'lerin reddettiğini doğrula. Onaylayan olursa `SYSTEM_PROMPT`'u sertleştir.
-- [ ] Mümkünse 1–2 hakemi salondaki başka kişilere çalıştırt (`deploy.py --judges a,b,c` ile yeni deploy).
-- [ ] Demoyu iki kez prova et (akış README'de).
+- [ ] Monad testnet'e deploy et: `python deploy.py --bots 3 --commit 60 --reveal 45`. Hata verirse `evmVersion: "paris"`.
+- [ ] Gas maliyetini gör (deploy çıktısında gasPrice var). `python cards.py 10 --url ...` için bakiye yetiyor mu kontrol et.
+- [ ] Telefon sayfasını yayınla: GitHub Pages (main/root). `app/config.js` ve `dashboard/config.js` dosyalarını commit'le (anahtar içermez). Kart linki: `https://fkuyumcu.github.io/Monad-Blitz/app/`.
+- [ ] Botları başlat (2 dürüst + 1 lazy). Mümkünse bir dürüst botu gerçek bir LLM ile çalıştır.
+- [ ] Kendi telefonunla bir kartı okut ve tam bir tur dene: katıl → görev → puan → mühür → açılış → isabet.
+- [ ] `run good` ve `run bad` ile iki kez prova yap.
 
-## P1 — Vakit kalırsa (bugün)
-- [ ] **Kitleden teslimat:** QR ile açılan mobil sayfa. Tarayıcıda burner cüzdan oluşturur, `submit` gönderir. Gas için bir faucet fonksiyonu ya da deployer'dan otomatik fonlama gerekir.
-- [ ] Dashboard'da "Düşünüyor" kartına geçen süre sayacı ekle.
-- [ ] `demo.py run` için özel metin: `demo.py run custom "metin"`.
+## P1 — Vakit kalırsa
+- [ ] Dashboard'a salondakilerin okutacağı büyük bir "Değerlendirici ol" QR'ı ekle (sıradaki kartı gösteren kiosk modu).
+- [ ] Freelancer tarafında teslimattan sonra canlı durum göstergesi.
+- [ ] Telefonda açma aşaması gelince titreşim veya bildirim (`navigator.vibrate`).
 
-## P2 — Metropolis'e taşınırsa (13 Ekim teslim)
-- [ ] Açık hakem kaydı ve her iş için rastgele 3 hakem seçimi (VRF ya da blockhash tabanlı commit-reveal).
-- [ ] **Commit-reveal oylama:** Hakemler birbirinin oyunu görüp kopyalamasın.
-- [ ] Deadline ve zaman aşımında iade, askıda kalan işler için hakem değişimi.
-- [ ] Pull-payment (`withdraw`) ile DoS riskini kaldır.
-- [ ] Teminat kilidi: oy verilen işler kapanmadan teminat çekilemesin.
-- [ ] Teslimat için IPFS/CID ve zincirde sadece hash.
-- [ ] İtibar: hakemin çoğunlukla uyum oranı zincirde tutulsun.
-- [ ] Ajanlar arası mikro görevler (x402 ile entegrasyon) konumlandırması.
-- [ ] Foundry'ye geçiş, fuzz testleri, `nonReentrant`.
+## P2 — Metropolis (13 Ekim)
+- [ ] **Tuzak görevler:** Doğru puanı bilinen gizli işler. Tembel ya da taraflı değerlendiriciyi yakalar. Çoğunluk ≠ doğruluk sorununun asıl çözümü.
+- [ ] **İtiraz turu:** Freelancer ya da iş veren teminat koyup 5 kişilik ikinci tura götürebilir. İlk turda yanlış karar verenler daha ağır ceza yer.
+- [ ] VRF ile atama. Teminat ve itibar ağırlıklı seçim.
+- [ ] Rubrik: birden çok kriter (doğruluk, biçim, zamanında teslim), kriter başına medyan.
+- [ ] Pull-payment, değerlendirici başına eşzamanlı iş sınırı, teminat kilidi süresi.
+- [ ] Teslimat için IPFS ve hash. Yorumlar da istenirse şifreli tutulabilir.
+- [ ] Taşınabilir itibar: başka platformların okuyabileceği bir arayüz.
+- [ ] Foundry'ye geçiş, fuzz ve invariant testleri.

@@ -3,8 +3,12 @@
 *.env
 !.env.example
 # bağımlılıklar / derleme çıktıları
-node_modules/
+node_modules
 __pycache__/
 *.pyc
 .venv/
 .DS_Store
+# cüzdan kartları (özel anahtar içerir)
+cards/
+# bot oy tuzları
+.bot-state/
