@@ -6,92 +6,97 @@
 <title>Kurul · Canlı</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper:#f3eee3; --paper2:#ebe4d5; --ink:#16130f; --soft:#5c554a;
-    --kabul:#1d6a3a; --ret:#c0271d; --cezabg:#fbe7b0;
-    --serif:"Fraunces",Georgia,"Times New Roman",serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"IBM Plex Sans",system-ui,sans-serif;
+    --bg:#0E100F; --surface:#171A19; --surface2:#1F2321; --line:#2A2E2C;
+    --text:#F2F2EE; --muted:#A7ABA6;
+    --purple:#836EF9; --purple-text:#B9ADFF; --deep:#200052;
+    --ok:#7ED3A2; --ok-bg:rgba(76,175,125,.14); --ok-line:rgba(76,175,125,.38);
+    --berry:#A0055D; --berry-text:#F07AB5; --berry-bg:rgba(160,5,93,.22);
+    --font:"Hanken Grotesk",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --r:6px;
   }
   * { box-sizing:border-box; }
-  html { background:var(--paper); }
-  body { margin:0; color:var(--ink); font:17px/1.5 var(--sans); background:var(--paper); }
-  main { max-width:1360px; margin:0 auto; padding:20px 32px 36px; }
-  a { color:inherit; text-underline-offset:3px; }
-  .mast { display:grid; grid-template-columns:1fr auto auto; align-items:end; gap:24px; border-bottom:4px double var(--ink); padding-bottom:12px; }
-  .mast h1 { margin:0; font:800 58px/.95 var(--serif); letter-spacing:-.02em; }
-  .mast .kunye { font:400 13px/1.4 var(--mono); text-transform:uppercase; letter-spacing:.08em; margin-top:10px; }
-  .sayi { text-align:right; border-left:1px solid var(--ink); padding-left:22px; }
-  .sayi small { display:block; font:400 12px var(--mono); text-transform:uppercase; letter-spacing:.1em; }
-  .sayi b { font:600 40px/1 var(--serif); font-variant-numeric:tabular-nums; }
-  .sayi span { font:400 15px var(--mono); }
+  html { background:var(--bg); }
+  body { margin:0; color:var(--text); font:17px/1.5 var(--font); background:var(--bg); -webkit-font-smoothing:antialiased; }
+  main { max-width:1440px; margin:0 auto; padding:24px 40px 40px; }
+  a { color:var(--purple-text); text-underline-offset:3px; }
 
-  .dosya { display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; padding:12px 0; border-bottom:1px solid var(--ink); }
-  .dosya .no { font:600 30px var(--serif); }
-  .dosya .durum { font:600 14px var(--mono); text-transform:uppercase; letter-spacing:.08em; padding:2px 8px; border:1.5px solid var(--ink); }
-  .dosya .sure { font:600 16px var(--mono); }
-  .dosya .tutar { font:400 16px var(--mono); }
-  .nav { margin-left:auto; display:flex; }
-  .nav button { font:600 14px var(--mono); background:transparent; color:var(--ink); border:1.5px solid var(--ink); padding:4px 12px; cursor:pointer; margin-left:-1.5px; }
-  .nav button:hover, .nav button.on { background:var(--ink); color:var(--paper); }
+  .mast { display:grid; grid-template-columns:1fr auto auto; align-items:end; gap:32px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+  .mast h1 { margin:0; font:700 40px/1 var(--font); letter-spacing:-.02em; }
+  .mast .kunye { font:400 15px/1.4 var(--font); color:var(--muted); margin-top:8px; }
+  .mast .kunye a { font:400 14px var(--mono); color:var(--muted); }
+  .sayi { text-align:right; }
+  .sayi small { display:block; font:500 14px var(--font); color:var(--muted); }
+  .sayi b { font:600 30px/1.1 var(--font); font-variant-numeric:tabular-nums; }
+  .sayi span { font:500 15px var(--font); color:var(--muted); }
 
-  .belge { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--ink); }
-  .belge > div { padding:14px 24px 16px 0; }
-  .belge > div + div { padding-left:24px; border-left:1px solid var(--ink); }
-  .etiket { font:600 12px var(--mono); text-transform:uppercase; letter-spacing:.12em; margin:0 0 8px; }
-  .belge pre { margin:0; white-space:pre-wrap; word-break:break-word; font:400 18px/1.5 var(--mono); }
+  .dosya { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-top:20px; padding:14px 18px 14px 22px;
+           background:var(--deep); border-radius:var(--r); }
+  .dosya .no { font:700 26px var(--font); letter-spacing:-.01em; }
+  .dosya .durum { font:600 15px var(--font); padding:4px 10px; border-radius:var(--r); background:rgba(255,255,255,.1); }
+  .dosya .sure { font:600 18px var(--font); font-variant-numeric:tabular-nums; }
+  .dosya .tutar { font:400 16px var(--font); color:#CFC8F4; font-variant-numeric:tabular-nums; }
+  .nav { margin-left:auto; display:flex; gap:6px; }
+  .nav button { font:600 15px var(--font); background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.25);
+                padding:6px 14px; border-radius:var(--r); cursor:pointer; transition:background-color .15s; }
+  .nav button:hover { background:rgba(255,255,255,.1); }
+  .nav button.on { background:var(--purple); border-color:var(--purple); color:var(--bg); }
 
-  .kurul { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid var(--ink); }
-  .uye { padding:16px 22px 14px 0; min-height:250px; display:flex; flex-direction:column; gap:6px; }
-  .uye + .uye { padding-left:22px; border-left:1px solid var(--ink); }
-  .uye .rn { font:400 13px var(--mono); text-transform:uppercase; letter-spacing:.1em; }
-  .uye .adres { font:600 17px var(--mono); }
-  .uye .itibar { font:400 13px var(--mono); color:var(--soft); }
-  .uye .puan { font:800 64px/1 var(--serif); letter-spacing:-.02em; margin-top:6px; }
-  .uye .puan small { font:400 22px var(--serif); color:var(--soft); }
-  .uye .yorum { font:400 italic 19px/1.35 var(--serif); min-height:50px; }
-  .muhur { align-self:flex-start; margin-top:8px; font:800 28px/1 var(--serif); letter-spacing:.06em; padding:6px 14px 4px; border:4px solid currentColor; }
-  .muhur.bekle { color:var(--soft); border-style:dashed; font-size:22px; }
-  .muhur.muhurlu { color:var(--ink); transform:rotate(-4deg); }
-  .uye.yeni .muhur.muhurlu { animation:bas .35s cubic-bezier(.2,1.6,.4,1) both; }
-  @keyframes bas { from { transform:rotate(-4deg) scale(1.8); opacity:0; } to { transform:rotate(-4deg) scale(1); opacity:1; } }
-  .sonuc { margin-top:auto; font:600 15px var(--mono); padding:6px 10px; border:2px solid var(--ink); }
-  .sonuc.isabet { color:var(--kabul); border-color:var(--kabul); background:#fff; }
-  .sonuc small { display:block; font:400 13px var(--mono); color:var(--soft); margin-top:2px; }
-  .sonuc.ceza { background:var(--cezabg); }
-  .uye.cezali .adres { text-decoration:line-through; text-decoration-thickness:3px; text-decoration-color:var(--ret); }
-  .dots::after { content:""; animation:dots 1.2s steps(4) infinite; }
-  @keyframes dots { 0% { content:""; } 25% { content:"."; } 50% { content:".."; } 75% { content:"..."; } }
+  .belge { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+  .belge > div { background:var(--surface); border-radius:var(--r); padding:18px 22px 20px; }
+  .etiket { font:600 14px var(--font); color:var(--muted); margin:0 0 8px; }
+  .belge pre { margin:0; white-space:pre-wrap; word-break:break-word; font:400 19px/1.45 var(--font); }
 
-  .hukum { display:none; padding:16px 0; border-bottom:4px double var(--ink); }
-  .hukum.goster { display:grid; grid-template-columns:auto 1fr auto; gap:26px; align-items:center; }
-  .hukum .skor { font:800 74px/1 var(--serif); }
-  .hukum .skor small { font:400 26px var(--serif); color:var(--soft); }
-  .hukum .metin { font:400 21px/1.4 var(--serif); }
-  .hukum .metin b { font-weight:600; }
-  .hukum .kalici { display:block; font:600 13px var(--mono); text-transform:uppercase; letter-spacing:.08em; margin-top:6px; }
-  .hukum a { font:600 14px var(--mono); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+  .kurul { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:16px; }
+  .uye { background:var(--surface); border-radius:var(--r); padding:18px 22px 20px; min-height:260px; display:flex; flex-direction:column; gap:6px; }
+  .uye .rn { font:600 14px var(--font); color:var(--muted); }
+  .uye .adres { font:400 15px var(--mono); color:var(--text); }
+  .uye .itibar { font:400 14px var(--font); color:var(--muted); }
+  .uye .puan { font:700 76px/1 var(--font); letter-spacing:-.03em; margin-top:8px; font-variant-numeric:tabular-nums; }
+  .uye .puan small { font:500 24px var(--font); color:var(--muted); letter-spacing:0; }
+  .uye .yorum { font:400 18px/1.4 var(--font); min-height:50px; }
+  .muhur { align-self:flex-start; margin-top:10px; font:600 16px var(--font); padding:6px 12px; border-radius:var(--r); }
+  .muhur.bekle { background:var(--surface2); color:var(--muted); }
+  .muhur.muhurlu { background:rgba(131,110,249,.16); color:var(--purple-text); border:1px solid rgba(131,110,249,.45); }
+  .uye.yeni .muhur, .uye.yeni .puan { animation:belir .18s ease-out both; }
+  @keyframes belir { from { opacity:.35; } to { opacity:1; } }
+  .sonuc { margin-top:auto; font:600 16px var(--font); padding:8px 12px; border-radius:var(--r); font-variant-numeric:tabular-nums; }
+  .sonuc.isabet { color:var(--ok); background:var(--ok-bg); border:1px solid var(--ok-line); }
+  .sonuc.ceza { color:#FFF0F6; background:var(--berry); }
+  .sonuc small { display:block; font:400 14px var(--font); color:var(--muted); margin-top:2px; }
+  .uye.cezali .adres { text-decoration:line-through; text-decoration-thickness:2px; text-decoration-color:var(--berry-text); color:var(--muted); }
 
-  .alt { display:grid; grid-template-columns:1fr 1.2fr; gap:0; }
-  .alt > section { padding-top:14px; }
-  .alt > section + section { padding-left:24px; border-left:1px solid var(--ink); }
-  .alt > section:first-child { padding-right:24px; }
-  table.itibar { width:100%; border-collapse:collapse; font:14px var(--mono); }
-  table.itibar th { text-align:left; font:600 11px var(--mono); text-transform:uppercase; letter-spacing:.1em; border-bottom:1.5px solid var(--ink); padding:3px 8px 3px 0; }
-  table.itibar td { padding:5px 8px 5px 0; border-bottom:1px dotted var(--soft); font-variant-numeric:tabular-nums; }
-  table.itibar tr.eksi td { color:var(--ret); }
-  .tutanak ol { list-style:none; margin:0; padding:0; max-height:260px; overflow:auto; }
-  .tutanak li { display:grid; grid-template-columns:80px 1fr auto; gap:12px; padding:5px 0; border-top:1px dotted var(--soft); font:400 14px var(--mono); }
+  .hukum { display:none; margin-top:16px; padding:22px 28px; border-radius:var(--r); background:var(--purple); color:var(--bg); }
+  .hukum.goster { display:grid; grid-template-columns:auto 1fr auto; gap:28px; align-items:center; animation:belir .2s ease-out both; }
+  .hukum .skor { font:700 80px/1 var(--font); letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+  .hukum .skor small { font:500 28px var(--font); opacity:.65; letter-spacing:0; }
+  .hukum .metin { font:500 21px/1.45 var(--font); }
+  .hukum .metin b { font-weight:700; }
+  .hukum a { font:600 16px var(--font); color:var(--bg); white-space:nowrap; }
+
+  .alt { display:grid; grid-template-columns:1fr 1.2fr; gap:16px; margin-top:16px; }
+  .alt > section { background:var(--surface); border-radius:var(--r); padding:18px 22px 16px; }
+  .alt .etiket { font:600 16px var(--font); color:var(--text); margin-bottom:10px; }
+  table.itibar { width:100%; border-collapse:collapse; font:15px var(--font); font-variant-numeric:tabular-nums; }
+  table.itibar th { text-align:left; font:500 14px var(--font); color:var(--muted); border-bottom:1px solid var(--line); padding:4px 8px 6px 0; }
+  table.itibar td { padding:7px 8px 7px 0; border-bottom:1px solid var(--line); }
+  table.itibar td:first-child { font:400 14px var(--mono); }
+  table.itibar tr:last-child td { border-bottom:0; }
+  table.itibar tr.eksi td { color:var(--berry-text); }
+  .tutanak ol { list-style:none; margin:0; padding:0; max-height:270px; overflow:auto; }
+  .tutanak li { display:grid; grid-template-columns:76px 1fr auto; gap:12px; padding:6px 8px; margin:0 -8px; border-top:1px solid var(--line); font:400 15px var(--font); }
   .tutanak li:first-child { border-top:0; }
-  .tutanak li.vurgu { background:var(--cezabg); }
-  .tutanak time { color:var(--soft); }
-  .err { font:600 14px var(--mono); color:var(--ret); margin-top:10px; }
+  .tutanak li.vurgu { background:var(--berry-bg); border-radius:var(--r); border-top-color:transparent; }
+  .tutanak time { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .tutanak a { font-size:14px; }
+  .err { font:600 15px var(--font); color:var(--berry-text); margin-top:12px; }
   @media (max-width:900px) {
-    main { padding:16px; } .mast { grid-template-columns:1fr; } .sayi { text-align:left; border-left:0; padding-left:0; }
+    main { padding:16px; } .mast { grid-template-columns:1fr; gap:12px; } .sayi { text-align:left; }
     .belge, .kurul, .alt, .hukum.goster { grid-template-columns:1fr; }
-    .belge > div + div, .uye + .uye, .alt > section + section { padding-left:0; border-left:0; border-top:1px solid var(--ink); }
   }
-  @media (prefers-reduced-motion: reduce) { .uye.yeni .muhur, .dots::after { animation:none; } }
+  @media (prefers-reduced-motion: reduce) { .uye.yeni .muhur, .uye.yeni .puan, .hukum.goster { animation:none; } }
 </style>
 </head>
 <body>
@@ -99,7 +104,7 @@
   <header class="mast">
     <div>
       <h1>Kurul</h1>
-      <div class="kunye">Freelance işe üç bağımsız değerlendirici · mühürlü oy · medyan puan · isabete ücret, sapmaya ceza · <a id="contractLink" target="_blank"></a></div>
+      <div class="kunye">Monad testnet · <a id="contractLink" target="_blank"></a></div>
     </div>
     <div class="sayi"><small>Havuzdaki değerlendirici</small><b id="poolN">–</b></div>
     <div class="sayi"><small>Kontratta kilitli</small><b id="vault">–</b> <span>MON</span></div>
@@ -123,11 +128,11 @@
 
   <div class="alt">
     <section>
-      <p class="etiket">İtibar tablosu — zincirde, herkese açık</p>
+      <p class="etiket">İtibar</p>
       <table class="itibar"><thead><tr><th>Değerlendirici</th><th>İsabet</th><th>İş</th><th>Kazanç</th><th>Ceza</th></tr></thead><tbody id="board"></tbody></table>
     </section>
     <section class="tutanak">
-      <p class="etiket">Tutanak — geri alınamaz kayıtlar</p>
+      <p class="etiket">İşlem kaydı</p>
       <ol id="feed"></ol>
     </section>
   </div>
@@ -268,13 +273,14 @@ async function render() {
     const sealed = j.commits[i] !== ZERO32, score = j.scores[i];
     let cls = "", mid = "";
     if (score) {
+      const pk = `${id}-${k}-puan`; if (!stamped.has(pk)) { stamped.add(pk); cls = "yeni"; }
       const cm = (comments[id] || {})[k];
       mid = `<div class="puan">${score}<small>/10</small></div><div class="yorum">${cm ? "“" + esc(cm.replace(/^\[[^\]]+\]\s*/, "")) + "”" : ""}</div>`;
     } else if (sealed) {
       const key = `${id}-${k}`; if (!stamped.has(key)) { stamped.add(key); cls = "yeni"; }
-      mid = `<div class="muhur muhurlu">MÜHÜRLÜ</div><div class="yorum" style="color:var(--soft)">Puan gizli · ${j.status === 1 ? "diğerleri bekleniyor" : "açılıyor"}</div>`;
+      mid = `<div class="muhur muhurlu">Mühürlü</div><div class="yorum" style="color:var(--muted)">Puan gizli · ${j.status === 1 ? "diğerleri bekleniyor" : "açılıyor"}</div>`;
     } else if (j.status === 1) {
-      mid = `<div class="muhur bekle"><span class="dots">İnceliyor</span></div>`;
+      mid = `<div class="muhur bekle">İnceliyor</div>`;
     } else {
       mid = `<div class="muhur bekle">Oy yok</div>`;
     }
@@ -298,11 +304,10 @@ async function render() {
     const pay = fin ? fin.pay : (f >= 8 ? j.amount : (j.amount * BigInt(f)) / 10n);
     box.className = "hukum goster";
     box.innerHTML = `<div class="skor">${f || "—"}<small>/10</small></div>
-      <div class="metin">${f ? `Nihai puan üç puanın <b>medyanı</b>. Freelancer <b>${fmt(pay)} MON</b> aldı${f >= 8 ? " (tam ödeme)" : ` (puan oranında, %${f * 10})`}. ${slashTotal > 0n && sumW
-          ? `Değerlendirme ücreti ve kesilen <b>${fmt(slashTotal)} MON</b> ceza, isabetli değerlendiricilere isabet oranlarına göre bölüştürüldü.`
-          : "Değerlendirme ücreti isabet oranına göre paylaştırıldı."}`
-                                : "Yeterli oy çıkmadı, tüm ödeme iş verene iade edildi."}
-        <span class="kalici">Bu karar zincirde · hiçbir yönetici değiştiremez ya da silemez</span></div>
+      <div class="metin">${f ? `Üç puanın medyanı ${f}. Freelancer'a ödenen: <b>${fmt(pay)} MON</b> (${f >= 8 ? "tamamı" : `%${f * 10}`}).
+          ${sumW ? (slashTotal > 0n ? `Ücret ve <b>${fmt(slashTotal)} MON</b> ceza isabetli değerlendiricilere bölündü.`
+                                    : "Ücret isabetli değerlendiricilere bölündü.") : ""}`
+                                : "Yeterli oy açılmadı. Ödeme ve ücret iş verene iade edildi."}</div>
       ${fin ? `<a target="_blank" href="${CFG.explorer}/tx/${fin.tx}">İşlem ↗</a>` : "<span></span>"}`;
   } else box.className = "hukum";
 }
